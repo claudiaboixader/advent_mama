@@ -1,166 +1,492 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendari d'Advent - Qui és qui de petit?</title>
-    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-red: #c41e3a;
-            --dark-red: #8b0000;
-            --pine-green: #164a2f;
-            --snow-white: #fcfbf7;
-            --gold: #d4af37;
-            --gold-hover: #f3cf65;
-            --shadow: rgba(0, 0, 0, 0.2);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qui és de Petit? - Calendari d'Advent Concurs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            festive: {
+              red: '#C0392B',
+              darkred: '#8B0000',
+              green: '#1E4D2B',
+              lightgreen: '#2D6A4F',
+              gold: '#D4AF37',
+              warmgold: '#F39C12',
+              cream: '#FFFDD0',
+              snow: '#F8FAF9',
+            }
+          },
+          fontFamily: {
+            holiday: ['"Mountains of Christmas"', 'cursive'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
         }
+      }
+    }
+  </script>
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0d2818 0%, #164a2f 50%, #051b11 100%);
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            overflow-x: hidden;
+  <style>
+    /* Personalització de scrollbar i efecte neu */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #C0392B; border-radius: 4px; }
+    
+    #snow-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 50;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.93);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+    }
+    .door-card {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .door-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 15px 30px -5px rgba(30, 77, 43, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-festive-snow font-sans text-gray-800 min-h-screen flex flex-col relative pb-12 overflow-x-hidden">
+
+  <!-- Canvas per a l'efecte de neu -->
+  <canvas id="snow-canvas"></canvas>
+
+  <!-- Header i Banner Festiu -->
+  <header class="bg-gradient-to-r from-festive-darkred via-festive-red to-festive-darkred text-white shadow-xl relative overflow-hidden border-b-4 border-festive-gold">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 relative z-10">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-festive-gold/20 rounded-full border-2 border-festive-gold flex items-center justify-center text-festive-gold text-3xl sm:text-4xl shadow-inner">
+            <i class="fa-solid fa-gift animate-bounce"></i>
+          </div>
+          <div>
+            <span class="inline-block px-3 py-1 bg-festive-gold/30 border border-festive-gold text-festive-cream rounded-full text-xs font-bold uppercase tracking-wider mb-1">
+              <i class="fa-solid fa-snowflake mr-1"></i> Calendari d'Advent 🎄
+            </span>
+            <h1 class="text-3xl sm:text-5xl font-holiday font-bold tracking-wide text-white drop-shadow-md">
+              Qui és de Petit? 👶
+            </h1>
+            <p class="text-xs sm:text-sm text-red-100 max-w-md mt-1">
+              Obre la casella de cada dia, descobreix la foto i respon al formulari per sumar punts al rànquing!
+            </p>
+          </div>
+        </div>
+
+        <!-- Controls de la capçalera -->
+        <div class="flex items-center gap-3">
+          <button id="toggle-snow-btn" onclick="toggleSnow()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 backdrop-blur-sm">
+            <i class="fa-solid fa-snowflake text-blue-200"></i> <span id="snow-btn-text">Aturar Neu</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navegació entre Pestanyes Principals -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+    <div class="flex border-b border-gray-200 bg-white/80 p-1.5 rounded-2xl shadow-sm backdrop-blur-md justify-center sm:justify-start gap-1 sm:gap-2">
+      
+      <button id="tab-calendar-btn" onclick="switchTab('calendar')" class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 bg-festive-green text-white shadow-sm">
+        <i class="fa-solid fa-calendar-days text-yellow-400"></i> 1. Calendari (1-24)
+      </button>
+
+      <button id="tab-ranking-btn" onclick="switchTab('ranking')" class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
+        <i class="fa-solid fa-trophy text-yellow-500"></i> 2. Rànquing En Directe
+      </button>
+
+    </div>
+  </div>
+
+  <!-- CONTINGUT PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-1 w-full">
+
+    <!-- SECCIÓ 1: CALENDARI D'ADVENT (24 CASELLES) -->
+    <section id="section-calendar" class="space-y-6">
+      <div class="glass-card rounded-3xl p-6 festive-shadow">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-festive-green flex items-center gap-2">
+              <i class="fa-solid fa-door-closed text-festive-gold"></i> Les 24 Finestres de Desembre
+            </h2>
+            <p class="text-xs text-gray-500">Fes clic a qualsevol casella per veure la foto de petit i enviar la teva resposta.</p>
+          </div>
+          
+          <div class="flex items-center gap-3 text-xs font-bold">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-800 rounded-full">
+              <span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span> Actiu
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-800 rounded-full">
+              <span class="w-2.5 h-2.5 bg-amber-500 rounded-full"></span> Passat
+            </span>
+          </div>
+        </div>
+
+        <!-- Grid de les 24 caselles estil MyAdvent -->
+        <div id="advent-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <!-- Carregat per JS -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- SECCIÓ 2: CLASSIFICACIÓ I RÀNQUING -->
+    <section id="section-ranking" class="space-y-6 hidden">
+      <!-- Podi Top 3 -->
+      <div class="glass-card rounded-3xl p-6 festive-shadow bg-gradient-to-b from-white/90 to-amber-50/40">
+        <h2 class="text-center font-holiday text-3xl font-bold text-festive-darkred mb-6">
+          👑 Podi d'Honor del Concurs 👑
+        </h2>
+        <div id="podium-container" class="flex items-end justify-center gap-2 sm:gap-6 max-w-2xl mx-auto pt-4 pb-2">
+          <!-- Renderitzat per JS -->
+        </div>
+      </div>
+
+      <!-- Taula Completa de Classificació -->
+      <div class="glass-card rounded-3xl p-6 festive-shadow overflow-hidden">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">Classificació General</h3>
+            <p class="text-xs text-gray-500">Suma de punts segons encerts a través del formulari.</p>
+          </div>
+          <a href="#" target="_blank" id="form-direct-link-1" class="px-4 py-2 bg-festive-green hover:bg-festive-lightgreen text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-pen-to-square"></i> Enviar nova resposta
+          </a>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-gray-200 text-xs font-extrabold text-gray-400 uppercase tracking-wider">
+                <th class="py-3 px-4">Posició</th>
+                <th class="py-3 px-4">Participant</th>
+                <th class="py-3 px-4 text-center">Encerts</th>
+                <th class="py-3 px-4 text-center">Raja (Streak)</th>
+                <th class="py-3 px-4 text-right">Punts Totals</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody" class="divide-y divide-gray-100 text-sm font-medium">
+              <!-- Renderitzat per JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL / FINESTRA EMERGENT PER A CADA DIA -->
+  <div id="day-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border-4 border-festive-gold relative">
+      <button onclick="closeModal()" class="absolute top-3 right-3 w-9 h-9 bg-black/50 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition z-10">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="p-6" id="modal-content">
+        <!-- Emplenat per JS -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- LÒGICA JAVASCRIPT -->
+  <script>
+    // --- 1. CONFIGURACIÓ DE PARTICIPANTS I DIES ---
+    const PLAYERS = ["Laura G.", "Pau M.", "Sofia B.", "Marc R.", "Carla S.", "Jordi T.", "Marta P.", "David L."];
+
+    // Enllaç al teu Google Form (Substitueix aquest enllaç pel teu real quan el tinguis)
+    const GOOGLE_FORM_URL = "https://forms.google.com";
+
+    // Configuració de les 24 Finestres de l'Advent
+    const adventDays = Array.from({ length: 24 }, (_, i) => {
+      const dayNum = i + 1;
+      return {
+        day: dayNum,
+        title: `Dia ${dayNum}: Qui s'amaga aquí?`,
+        image: `https://images.unsplash.com/photo-${1519689680058 + (i*1000)}?auto=format&fit=crop&w=600&q=80`,
+        // Imatges d'exemple amb un fallback
+        fallbackImg: "https://images.unsplash.com/photo-1512474932049-78ac69eed88d?auto=format&fit=crop&w=600&q=80",
+        solution: PLAYERS[i % PLAYERS.length],
+        hint: `Pista especial de l'host per al dia ${dayNum}.`
+      };
+    });
+
+    // Dades de simulació de respostes
+    let submittedGuesses = [
+      { day: 1, user: "Pau M.", guess: "Laura G." },
+      { day: 1, user: "Sofia B.", guess: "Laura G." },
+      { day: 2, user: "Marc R.", guess: "Pau M." }
+    ];
+
+    let isSnowing = true;
+
+    // --- 2. INICIALITZACIÓ EN CARREGAR LA PÀGINA ---
+    window.onload = function() {
+      // Connectar enllaços del Google Form
+      const formBtn = document.getElementById('google-form-btn');
+      const formBtn1 = document.getElementById('form-direct-link-1');
+      if (formBtn) formBtn.href = GOOGLE_FORM_URL;
+      if (formBtn1) formBtn1.href = GOOGLE_FORM_URL;
+
+      renderAdventGrid();
+      renderLeaderboard();
+      startSnowfall();
+    };
+
+    // --- 3. NAVEGACIÓ ENTRE PESTANYES ---
+    function switchTab(tabName) {
+      ['calendar', 'ranking', 'form'].forEach(t => {
+        document.getElementById(`section-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-${t}-btn`);
+        if (btn) {
+          btn.classList.remove('bg-festive-green', 'text-white', 'shadow-sm');
+          btn.classList.add('text-gray-600', 'hover:bg-gray-100');
         }
+      });
 
-        /* Snow effect canvas */
-        #snow-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
+      document.getElementById(`section-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabName}-btn`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+        activeBtn.classList.add('bg-festive-green', 'text-white', 'shadow-sm');
+      }
+
+      if (tabName === 'ranking') renderLeaderboard();
+    }
+
+    // --- 4. RENDERITZAR GRID DE DIES (ESTIL MYADVENT) ---
+    function renderAdventGrid() {
+      const grid = document.getElementById('advent-grid');
+      grid.innerHTML = '';
+
+      adventDays.forEach(d => {
+        grid.innerHTML += `
+          <div onclick="openDayModal(${d.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-festive-gold/40">
+            
+            <!-- Badge Número de Dia -->
+            <div class="absolute top-2 left-2 bg-gradient-to-r from-festive-red to-festive-darkred text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md border border-yellow-300">
+              ${d.day}
+            </div>
+            
+            <!-- Miniatura Imatge -->
+            <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-festive-gold shadow-md group-hover:scale-105 transition bg-gray-900 flex items-center justify-center">
+              <img src="${d.image}" onerror="this.src='${d.fallbackImg}'" class="w-full h-full object-cover">
+            </div>
+
+            <div class="w-full">
+              <p class="text-xs font-bold text-gray-800 line-clamp-1">${d.title}</p>
+              <span class="inline-block mt-2 px-3 py-1 bg-festive-green/10 text-festive-green text-[11px] font-extrabold rounded-lg group-hover:bg-festive-green group-hover:text-white transition">
+                <i class="fa-solid fa-eye mr-1"></i> Veure foto
+              </span>
+            </div>
+
+          </div>
+        `;
+      });
+    }
+
+    // --- 5. MODAL DE CADA DIA ---
+    function openDayModal(dayNum) {
+      const dayObj = adventDays.find(d => d.day === dayNum);
+      if (!dayObj) return;
+
+      const modalContent = document.getElementById('modal-content');
+      modalContent.innerHTML = `
+        <div class="text-center space-y-4">
+          <span class="inline-block px-4 py-1 bg-festive-red text-white text-xs font-extrabold rounded-full uppercase tracking-wider">
+            Dia ${dayObj.day} de Desembre
+          </span>
+          
+          <h3 class="text-xl font-bold text-gray-900">${dayObj.title}</h3>
+          
+          <!-- Foto Gran -->
+          <div class="rounded-2xl overflow-hidden border-4 border-festive-gold max-h-[320px] flex items-center justify-center bg-gray-900 shadow-inner">
+            <img src="${dayObj.image}" onerror="this.src='${dayObj.fallbackImg}'" class="w-full h-full object-contain">
+          </div>
+
+          <!-- Pista -->
+          <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-left text-xs">
+            <p class="font-bold text-amber-900"><i class="fa-solid fa-lightbulb text-yellow-600 mr-1"></i> Pista:</p>
+            <p class="text-amber-800 mt-0.5">${dayObj.hint}</p>
+          </div>
+
+          <!-- Botó d'Acció al Google Form -->
+          <a href="${GOOGLE_FORM_URL}" target="_blank" onclick="closeModal()" class="w-full py-3.5 bg-gradient-to-r from-festive-green to-festive-lightgreen hover:from-festive-lightgreen hover:to-festive-green text-white font-extrabold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane text-yellow-300"></i> Respondre al formulari (Dia ${dayObj.day})
+          </a>
+        </div>
+      `;
+
+      document.getElementById('day-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('day-modal').classList.add('hidden');
+    }
+
+    // --- 6. CÀLCUL I RENDERITZAT DE LA CLASSIFICACIÓ ---
+    function calculateScores() {
+      const scores = {};
+      PLAYERS.forEach(p => {
+        scores[p] = { name: p, points: 0, correct: 0, streak: 0, totalGuesses: 0 };
+      });
+
+      adventDays.forEach(dayObj => {
+        PLAYERS.forEach(player => {
+          const playerGuess = submittedGuesses.find(g => g.day === dayObj.day && g.user === player);
+          if (playerGuess) {
+            scores[player].totalGuesses++;
+            if (playerGuess.guess.toLowerCase().trim() === dayObj.solution.toLowerCase().trim()) {
+              scores[player].correct++;
+              scores[player].streak++;
+              scores[player].points += 100 + (scores[player].streak * 10);
+            } else {
+              scores[player].streak = 0;
+            }
+          }
+        });
+      });
+
+      return Object.values(scores).sort((a, b) => b.points - a.points || b.correct - a.correct);
+    }
+
+    function renderLeaderboard() {
+      const sorted = calculateScores();
+      
+      // Render Podi Top 3
+      const podium = document.getElementById('podium-container');
+      podium.innerHTML = '';
+
+      if (sorted.length >= 3) {
+        const top1 = sorted[0];
+        const top2 = sorted[1];
+        const top3 = sorted[2];
+
+        podium.innerHTML = `
+          <!-- 2n Lloc -->
+          <div class="flex flex-col items-center flex-1">
+            <div class="w-11 h-11 rounded-full bg-slate-200 border-2 border-slate-400 flex items-center justify-center font-bold text-slate-700 mb-1 shadow">
+              🥈
+            </div>
+            <p class="text-xs font-bold text-gray-800 text-center truncate max-w-[80px]">${top2.name}</p>
+            <span class="text-[11px] font-extrabold text-festive-green">${top2.points} pts</span>
+            <div class="w-full bg-gradient-to-t from-slate-300 to-slate-100 h-20 rounded-t-xl mt-2 flex items-center justify-center font-bold text-slate-600 text-xl shadow">
+              2
+            </div>
+          </div>
+
+          <!-- 1r Lloc -->
+          <div class="flex flex-col items-center flex-1 -mt-4">
+            <div class="w-14 h-14 rounded-full bg-amber-100 border-4 border-festive-gold flex items-center justify-center font-bold text-2xl mb-1 shadow-lg animate-pulse">
+              👑
+            </div>
+            <p class="text-xs font-extrabold text-gray-900 text-center truncate max-w-[90px]">${top1.name}</p>
+            <span class="text-xs font-black text-festive-red">${top1.points} pts</span>
+            <div class="w-full bg-gradient-to-t from-amber-400 to-amber-200 h-28 rounded-t-xl mt-2 flex items-center justify-center font-black text-amber-900 text-3xl shadow-md border-t-2 border-festive-gold">
+              1
+            </div>
+          </div>
+
+          <!-- 3r Lloc -->
+          <div class="flex flex-col items-center flex-1">
+            <div class="w-11 h-11 rounded-full bg-amber-800/20 border-2 border-amber-700 flex items-center justify-center font-bold text-amber-900 mb-1 shadow">
+              🥉
+            </div>
+            <p class="text-xs font-bold text-gray-800 text-center truncate max-w-[80px]">${top3.name}</p>
+            <span class="text-[11px] font-extrabold text-festive-green">${top3.points} pts</span>
+            <div class="w-full bg-gradient-to-t from-amber-700/40 to-amber-600/20 h-16 rounded-t-xl mt-2 flex items-center justify-center font-bold text-amber-900 text-xl shadow">
+              3
+            </div>
+          </div>
+        `;
+      }
+
+      // Render Taula
+      const tbody = document.getElementById('leaderboard-tbody');
+      tbody.innerHTML = '';
+
+      sorted.forEach((player, index) => {
+        const rank = index + 1;
+        let badge = `<span class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 inline-flex items-center justify-center text-xs font-bold">${rank}</span>`;
+        if (rank === 1) badge = `🥇`;
+        if (rank === 2) badge = `🥈`;
+        if (rank === 3) badge = `🥉`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-amber-50/50 transition">
+            <td class="py-3 px-4 font-bold text-center">${badge}</td>
+            <td class="py-3 px-4 font-bold text-gray-800">${player.name}</td>
+            <td class="py-3 px-4 text-center">
+              <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-extrabold">
+                ${player.correct} / ${player.totalGuesses}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center text-xs font-bold text-orange-600">
+              ${player.streak > 1 ? `🔥 ${player.streak}` : '-'}
+            </td>
+            <td class="py-3 px-4 text-right font-black text-festive-green text-base">
+              ${player.points} <span class="text-xs font-normal text-gray-400">pts</span>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // --- 7. ANIMACIÓ DE NEU ---
+    function startSnowfall() {
+      const canvas = document.getElementById('snow-canvas');
+      const ctx = canvas.getContext('2d');
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const flakes = Array.from({ length: 40 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 3 + 1,
+        speed: Math.random() * 1 + 0.5
+      }));
+
+      function animateSnow() {
+        ctx.clearRect(0, 0, width, height);
+        if (isSnowing) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.beginPath();
+          flakes.forEach(f => {
+            ctx.moveTo(f.x, f.y);
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+            f.y += f.speed;
+            if (f.y > height) f.y = 0;
+          });
+          ctx.fill();
         }
+        requestAnimationFrame(animateSnow);
+      }
+      animateSnow();
+    }
 
-        header {
-            text-align: center;
-            padding: 2rem 1rem 1rem;
-            color: var(--snow-white);
-            z-index: 2;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        header h1 {
-            font-family: 'Mountains of Christmas', cursive;
-            font-size: 3rem;
-            color: var(--gold);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-            margin-bottom: 0.5rem;
-        }
-
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Navigation Tabs */
-        .nav-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin: 1.5rem 0 2rem;
-            z-index: 2;
-        }
-
-        .tab-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid var(--gold);
-            color: var(--snow-white);
-            padding: 0.75rem 2rem;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        }
-
-        .tab-btn:hover {
-            background: rgba(212, 175, 55, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .tab-btn.active {
-            background: var(--gold);
-            color: var(--pine-green);
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-        }
-
-        /* Main Container */
-        main {
-            width: 100%;
-            max-width: 1000px;
-            padding: 0 1rem 3rem;
-            z-index: 2;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Calendar Grid */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1.25rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .door {
-            aspect-ratio: 1;
-            perspective: 1000px;
-            cursor: pointer;
-        }
-
-        .door-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-            transform-style: preserve-3d;
-            border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-        }
-
-        .door:hover .door-inner {
-            transform: translateY(-5px);
-        }
-
-        .door-front, .door-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            border: 2px solid var(--gold);
+    function toggleSnow() {
+      isSnowing = !isSnowing;
+      document.getElementById('snow-btn-text').textContent = isSnowing ? 'Aturar Neu' : 'Activar Neu';
+    }
+  </script>
+</body>
+</html>
