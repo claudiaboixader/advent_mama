@@ -35,7 +35,6 @@
   </script>
 
   <style>
-    /* Personalització de scrollbar i efecte neu */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #f1f1f1; }
     ::-webkit-scrollbar-thumb { background: #C0392B; border-radius: 4px; }
@@ -87,7 +86,6 @@
           </div>
         </div>
 
-        <!-- Controls de la capçalera -->
         <div class="flex items-center gap-3">
           <button id="toggle-snow-btn" onclick="toggleSnow()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 backdrop-blur-sm">
             <i class="fa-solid fa-snowflake text-blue-200"></i> <span id="snow-btn-text">Aturar Neu</span>
@@ -128,15 +126,14 @@
           
           <div class="flex items-center gap-3 text-xs font-bold">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-800 rounded-full">
-              <span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span> Actiu
+              <span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span> Disponible
             </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-800 rounded-full">
-              <span class="w-2.5 h-2.5 bg-amber-500 rounded-full"></span> Passat
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-600 rounded-full">
+              <span class="w-2.5 h-2.5 bg-gray-400 rounded-full"></span> Bloquejat
             </span>
           </div>
         </div>
 
-        <!-- Grid de les 24 caselles estil MyAdvent -->
         <div id="advent-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <!-- Carregat per JS -->
         </div>
@@ -146,7 +143,6 @@
 
     <!-- SECCIÓ 2: CLASSIFICACIÓ I RÀNQUING -->
     <section id="section-ranking" class="space-y-6 hidden">
-      <!-- Podi Top 3 -->
       <div class="glass-card rounded-3xl p-6 festive-shadow bg-gradient-to-b from-white/90 to-amber-50/40">
         <h2 class="text-center font-holiday text-3xl font-bold text-festive-darkred mb-6">
           👑 Podi d'Honor del Concurs 👑
@@ -156,7 +152,6 @@
         </div>
       </div>
 
-      <!-- Taula Completa de Classificació -->
       <div class="glass-card rounded-3xl p-6 festive-shadow overflow-hidden">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <div>
@@ -189,7 +184,7 @@
 
   </main>
 
-  <!-- MODAL / FINESTRA EMERGENT PER A CADA DIA -->
+  <!-- MODAL DIA ACTIU / BLOQUEJAT -->
   <div id="day-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border-4 border-festive-gold relative">
       <button onclick="closeModal()" class="absolute top-3 right-3 w-9 h-9 bg-black/50 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition z-10">
@@ -205,10 +200,7 @@
 
   <!-- LÒGICA JAVASCRIPT -->
   <script>
-    // --- 1. CONFIGURACIÓ DE PARTICIPANTS I DIES ---
     const PLAYERS = ["Laura G.", "Pau M.", "Sofia B.", "Marc R.", "Carla S.", "Jordi T.", "Marta P.", "David L."];
-
-    // Enllaç al teu Google Form (Substitueix aquest enllaç pel teu real quan el tinguis)
     const GOOGLE_FORM_URL = "https://forms.google.com";
 
     // Configuració de les 24 Finestres de l'Advent
@@ -218,14 +210,12 @@
         day: dayNum,
         title: `Dia ${dayNum}: Qui s'amaga aquí?`,
         image: `https://images.unsplash.com/photo-${1519689680058 + (i*1000)}?auto=format&fit=crop&w=600&q=80`,
-        // Imatges d'exemple amb un fallback
         fallbackImg: "https://images.unsplash.com/photo-1512474932049-78ac69eed88d?auto=format&fit=crop&w=600&q=80",
         solution: PLAYERS[i % PLAYERS.length],
         hint: `Pista especial de l'host per al dia ${dayNum}.`
       };
     });
 
-    // Dades de simulació de respostes
     let submittedGuesses = [
       { day: 1, user: "Pau M.", guess: "Laura G." },
       { day: 1, user: "Sofia B.", guess: "Laura G." },
@@ -233,13 +223,24 @@
     ];
 
     let isSnowing = true;
+    let countdownInterval = null;
 
-    // --- 2. INICIALITZACIÓ EN CARREGAR LA PÀGINA ---
+    // --- CÀLCUL DE DESBLOQUEIG DE DIA ---
+    function getUnlockDateForDay(dayNum) {
+      // Any actual o 2026 per defecte (Desembre té mes 11 en JavaScript)
+      const currentYear = new Date().getFullYear();
+      return new Date(currentYear, 11, dayNum, 0, 0, 0); 
+    }
+
+    function isDayUnlocked(dayNum) {
+      const now = new Date();
+      const unlockDate = getUnlockDateForDay(dayNum);
+      return now >= unlockDate;
+    }
+
+    // --- INICIALITZACIÓ ---
     window.onload = function() {
-      // Connectar enllaços del Google Form
-      const formBtn = document.getElementById('google-form-btn');
       const formBtn1 = document.getElementById('form-direct-link-1');
-      if (formBtn) formBtn.href = GOOGLE_FORM_URL;
       if (formBtn1) formBtn1.href = GOOGLE_FORM_URL;
 
       renderAdventGrid();
@@ -247,19 +248,24 @@
       startSnowfall();
     };
 
-    // --- 3. NAVEGACIÓ ENTRE PESTANYES ---
+    // --- NAVEGACIÓ ENTRE PESTANYES ---
     function switchTab(tabName) {
-      ['calendar', 'ranking', 'form'].forEach(t => {
-        document.getElementById(`section-${t}`).classList.add('hidden');
+      // Amagar totes les seccions existents
+      ['calendar', 'ranking'].forEach(t => {
+        const sec = document.getElementById(`section-${t}`);
         const btn = document.getElementById(`tab-${t}-btn`);
+        if (sec) sec.classList.add('hidden');
         if (btn) {
           btn.classList.remove('bg-festive-green', 'text-white', 'shadow-sm');
           btn.classList.add('text-gray-600', 'hover:bg-gray-100');
         }
       });
 
-      document.getElementById(`section-${tabName}`).classList.remove('hidden');
+      // Activar la secció seleccionada
+      const activeSection = document.getElementById(`section-${tabName}`);
       const activeBtn = document.getElementById(`tab-${tabName}-btn`);
+      
+      if (activeSection) activeSection.classList.remove('hidden');
       if (activeBtn) {
         activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
         activeBtn.classList.add('bg-festive-green', 'text-white', 'shadow-sm');
@@ -268,77 +274,153 @@
       if (tabName === 'ranking') renderLeaderboard();
     }
 
-    // --- 4. RENDERITZAR GRID DE DIES (ESTIL MYADVENT) ---
+    // --- RENDERITZAR GRID DE DIES ---
     function renderAdventGrid() {
       const grid = document.getElementById('advent-grid');
       grid.innerHTML = '';
 
       adventDays.forEach(d => {
-        grid.innerHTML += `
-          <div onclick="openDayModal(${d.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-festive-gold/40">
-            
-            <!-- Badge Número de Dia -->
-            <div class="absolute top-2 left-2 bg-gradient-to-r from-festive-red to-festive-darkred text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md border border-yellow-300">
-              ${d.day}
-            </div>
-            
-            <!-- Miniatura Imatge -->
-            <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-festive-gold shadow-md group-hover:scale-105 transition bg-gray-900 flex items-center justify-center">
-              <img src="${d.image}" onerror="this.src='${d.fallbackImg}'" class="w-full h-full object-cover">
-            </div>
+        const unlocked = isDayUnlocked(d.day);
 
-            <div class="w-full">
-              <p class="text-xs font-bold text-gray-800 line-clamp-1">${d.title}</p>
-              <span class="inline-block mt-2 px-3 py-1 bg-festive-green/10 text-festive-green text-[11px] font-extrabold rounded-lg group-hover:bg-festive-green group-hover:text-white transition">
-                <i class="fa-solid fa-eye mr-1"></i> Veure foto
-              </span>
-            </div>
+        if (unlocked) {
+          // FINESTRA DESBLOQUEJADA
+          grid.innerHTML += `
+            <div onclick="openDayModal(${d.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-festive-gold/40">
+              <div class="absolute top-2 left-2 bg-gradient-to-r from-festive-red to-festive-darkred text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md border border-yellow-300">
+                ${d.day}
+              </div>
+              
+              <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-festive-gold shadow-md group-hover:scale-105 transition bg-gray-900 flex items-center justify-center">
+                <img src="${d.image}" onerror="this.src='${d.fallbackImg}'" class="w-full h-full object-cover">
+              </div>
 
-          </div>
-        `;
+              <div class="w-full">
+                <p class="text-xs font-bold text-gray-800 line-clamp-1">${d.title}</p>
+                <span class="inline-block mt-2 px-3 py-1 bg-festive-green/10 text-festive-green text-[11px] font-extrabold rounded-lg group-hover:bg-festive-green group-hover:text-white transition">
+                  <i class="fa-solid fa-eye mr-1"></i> Veure foto
+                </span>
+              </div>
+            </div>
+          `;
+        } else {
+          // FINESTRA BLOQUEJADA
+          grid.innerHTML += `
+            <div onclick="openDayModal(${d.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-gray-300 bg-gray-100/80 opacity-85">
+              <div class="absolute top-2 left-2 bg-gray-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md">
+                ${d.day}
+              </div>
+              
+              <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-200 border-2 border-gray-400 flex items-center justify-center text-gray-500 text-2xl shadow-inner">
+                <i class="fa-solid fa-lock"></i>
+              </div>
+
+              <div class="w-full">
+                <p class="text-xs font-bold text-gray-500 line-clamp-1">Dia ${d.day} de Desembre</p>
+                <span class="inline-block mt-2 px-3 py-1 bg-gray-200 text-gray-600 text-[11px] font-extrabold rounded-lg group-hover:bg-gray-300 transition">
+                  <i class="fa-solid fa-clock mr-1"></i> Bloquejat
+                </span>
+              </div>
+            </div>
+          `;
+        }
       });
     }
 
-    // --- 5. MODAL DE CADA DIA ---
+    // --- MODAL DIA (DISPONIBLE O COMPTE ENRERE) ---
     function openDayModal(dayNum) {
       const dayObj = adventDays.find(d => d.day === dayNum);
       if (!dayObj) return;
 
       const modalContent = document.getElementById('modal-content');
-      modalContent.innerHTML = `
-        <div class="text-center space-y-4">
-          <span class="inline-block px-4 py-1 bg-festive-red text-white text-xs font-extrabold rounded-full uppercase tracking-wider">
-            Dia ${dayObj.day} de Desembre
-          </span>
-          
-          <h3 class="text-xl font-bold text-gray-900">${dayObj.title}</h3>
-          
-          <!-- Foto Gran -->
-          <div class="rounded-2xl overflow-hidden border-4 border-festive-gold max-h-[320px] flex items-center justify-center bg-gray-900 shadow-inner">
-            <img src="${dayObj.image}" onerror="this.src='${dayObj.fallbackImg}'" class="w-full h-full object-contain">
-          </div>
+      const unlocked = isDayUnlocked(dayNum);
 
-          <!-- Pista -->
-          <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-left text-xs">
-            <p class="font-bold text-amber-900"><i class="fa-solid fa-lightbulb text-yellow-600 mr-1"></i> Pista:</p>
-            <p class="text-amber-800 mt-0.5">${dayObj.hint}</p>
-          </div>
+      if (countdownInterval) clearInterval(countdownInterval);
 
-          <!-- Botó d'Acció al Google Form -->
-          <a href="${GOOGLE_FORM_URL}" target="_blank" onclick="closeModal()" class="w-full py-3.5 bg-gradient-to-r from-festive-green to-festive-lightgreen hover:from-festive-lightgreen hover:to-festive-green text-white font-extrabold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-paper-plane text-yellow-300"></i> Respondre al formulari (Dia ${dayObj.day})
-          </a>
-        </div>
-      `;
+      if (unlocked) {
+        // Modal de foto i resposta
+        modalContent.innerHTML = `
+          <div class="text-center space-y-4">
+            <span class="inline-block px-4 py-1 bg-festive-red text-white text-xs font-extrabold rounded-full uppercase tracking-wider">
+              Dia ${dayObj.day} de Desembre
+            </span>
+            
+            <h3 class="text-xl font-bold text-gray-900">${dayObj.title}</h3>
+            
+            <div class="rounded-2xl overflow-hidden border-4 border-festive-gold max-h-[320px] flex items-center justify-center bg-gray-900 shadow-inner">
+              <img src="${dayObj.image}" onerror="this.src='${dayObj.fallbackImg}'" class="w-full h-full object-contain">
+            </div>
+
+            <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-left text-xs">
+              <p class="font-bold text-amber-900"><i class="fa-solid fa-lightbulb text-yellow-600 mr-1"></i> Pista:</p>
+              <p class="text-amber-800 mt-0.5">${dayObj.hint}</p>
+            </div>
+
+            <a href="${GOOGLE_FORM_URL}" target="_blank" onclick="closeModal()" class="w-full py-3.5 bg-gradient-to-r from-festive-green to-festive-lightgreen hover:from-festive-lightgreen hover:to-festive-green text-white font-extrabold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-paper-plane text-yellow-300"></i> Respondre al formulari (Dia ${dayObj.day})
+            </a>
+          </div>
+        `;
+      } else {
+        // Modal de Compte Enrere
+        modalContent.innerHTML = `
+          <div class="text-center space-y-4 py-2">
+            <div class="w-16 h-16 bg-red-100 text-festive-red rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner border border-red-200">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-gray-900">Dia ${dayObj.day} de Desembre</h3>
+            <p class="text-xs text-gray-500 max-w-xs mx-auto">Aquesta finestreta s'obrirà automàticament el dia ${dayObj.day} de desembre a les 00:00h.</p>
+            
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 my-2">
+              <p class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">Falten per al desbloqueig:</p>
+              <div id="countdown-display" class="text-2xl sm:text-3xl font-black text-festive-darkred tracking-tight font-mono">
+                Calculant...
+              </div>
+            </div>
+
+            <button onclick="closeModal()" class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition">
+              Entesos, esperaré! 🎁
+            </button>
+          </div>
+        `;
+
+        const targetDate = getUnlockDateForDay(dayNum);
+        
+        function updateTimer() {
+          const now = new Date();
+          const diff = targetDate - now;
+
+          if (diff <= 0) {
+            clearInterval(countdownInterval);
+            renderAdventGrid();
+            openDayModal(dayNum);
+            return;
+          }
+
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+          const minutes = Math.floor((diff / 1000 / 60) % 60);
+          const seconds = Math.floor((diff / 1000) % 60);
+
+          const display = document.getElementById('countdown-display');
+          if (display) {
+            display.innerText = `${days > 0 ? days + 'd ' : ''}${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+          }
+        }
+
+        updateTimer();
+        countdownInterval = setInterval(updateTimer, 1000);
+      }
 
       document.getElementById('day-modal').classList.remove('hidden');
     }
 
     function closeModal() {
       document.getElementById('day-modal').classList.add('hidden');
+      if (countdownInterval) clearInterval(countdownInterval);
     }
 
-    // --- 6. CÀLCUL I RENDERITZAT DE LA CLASSIFICACIÓ ---
+    // --- RÀNQUING I PUNTUACIONS ---
     function calculateScores() {
       const scores = {};
       PLAYERS.forEach(p => {
@@ -366,8 +448,6 @@
 
     function renderLeaderboard() {
       const sorted = calculateScores();
-      
-      // Render Podi Top 3
       const podium = document.getElementById('podium-container');
       podium.innerHTML = '';
 
@@ -377,45 +457,29 @@
         const top3 = sorted[2];
 
         podium.innerHTML = `
-          <!-- 2n Lloc -->
           <div class="flex flex-col items-center flex-1">
-            <div class="w-11 h-11 rounded-full bg-slate-200 border-2 border-slate-400 flex items-center justify-center font-bold text-slate-700 mb-1 shadow">
-              🥈
-            </div>
+            <div class="w-11 h-11 rounded-full bg-slate-200 border-2 border-slate-400 flex items-center justify-center font-bold text-slate-700 mb-1 shadow">🥈</div>
             <p class="text-xs font-bold text-gray-800 text-center truncate max-w-[80px]">${top2.name}</p>
             <span class="text-[11px] font-extrabold text-festive-green">${top2.points} pts</span>
-            <div class="w-full bg-gradient-to-t from-slate-300 to-slate-100 h-20 rounded-t-xl mt-2 flex items-center justify-center font-bold text-slate-600 text-xl shadow">
-              2
-            </div>
+            <div class="w-full bg-gradient-to-t from-slate-300 to-slate-100 h-20 rounded-t-xl mt-2 flex items-center justify-center font-bold text-slate-600 text-xl shadow">2</div>
           </div>
 
-          <!-- 1r Lloc -->
           <div class="flex flex-col items-center flex-1 -mt-4">
-            <div class="w-14 h-14 rounded-full bg-amber-100 border-4 border-festive-gold flex items-center justify-center font-bold text-2xl mb-1 shadow-lg animate-pulse">
-              👑
-            </div>
+            <div class="w-14 h-14 rounded-full bg-amber-100 border-4 border-festive-gold flex items-center justify-center font-bold text-2xl mb-1 shadow-lg animate-pulse">👑</div>
             <p class="text-xs font-extrabold text-gray-900 text-center truncate max-w-[90px]">${top1.name}</p>
             <span class="text-xs font-black text-festive-red">${top1.points} pts</span>
-            <div class="w-full bg-gradient-to-t from-amber-400 to-amber-200 h-28 rounded-t-xl mt-2 flex items-center justify-center font-black text-amber-900 text-3xl shadow-md border-t-2 border-festive-gold">
-              1
-            </div>
+            <div class="w-full bg-gradient-to-t from-amber-400 to-amber-200 h-28 rounded-t-xl mt-2 flex items-center justify-center font-black text-amber-900 text-3xl shadow-md border-t-2 border-festive-gold">1</div>
           </div>
 
-          <!-- 3r Lloc -->
           <div class="flex flex-col items-center flex-1">
-            <div class="w-11 h-11 rounded-full bg-amber-800/20 border-2 border-amber-700 flex items-center justify-center font-bold text-amber-900 mb-1 shadow">
-              🥉
-            </div>
+            <div class="w-11 h-11 rounded-full bg-amber-800/20 border-2 border-amber-700 flex items-center justify-center font-bold text-amber-900 mb-1 shadow">🥉</div>
             <p class="text-xs font-bold text-gray-800 text-center truncate max-w-[80px]">${top3.name}</p>
             <span class="text-[11px] font-extrabold text-festive-green">${top3.points} pts</span>
-            <div class="w-full bg-gradient-to-t from-amber-700/40 to-amber-600/20 h-16 rounded-t-xl mt-2 flex items-center justify-center font-bold text-amber-900 text-xl shadow">
-              3
-            </div>
+            <div class="w-full bg-gradient-to-t from-amber-700/40 to-amber-600/20 h-16 rounded-t-xl mt-2 flex items-center justify-center font-bold text-amber-900 text-xl shadow">3</div>
           </div>
         `;
       }
 
-      // Render Taula
       const tbody = document.getElementById('leaderboard-tbody');
       tbody.innerHTML = '';
 
@@ -446,7 +510,7 @@
       });
     }
 
-    // --- 7. ANIMACIÓ DE NEU ---
+    // --- ANIMACIÓ DE NEU ---
     function startSnowfall() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
