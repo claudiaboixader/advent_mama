@@ -241,7 +241,7 @@
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdb-jxstBzMY5tmCTTo04pIfsWftche_9jC-Ah60nuPFU9V6g/viewform?usp=dialog";
 
     // Posa aquí l'ID del teu Google Sheet (El codi entre /d/ i /edit de la URL del full):
-    const SPREADSHEET_ID = "EL_TEU_SPREADSHEET_ID_AQUI"; 
+    const SPREADSHEET_ID = "e/2PACX-1vQ6995gfstbDC8lBzvBC6TkuM-8bHDWNr4F-SF8ZKCtIJ2yoYT_fz77DxqNqJ-FWJOXX5W9ftqOk5Fs"; 
 
     // Registres inicials de prova
     let userRegistrations = JSON.parse(localStorage.getItem('advent_user_regs')) || [
@@ -290,7 +290,7 @@
 
     // --- 2. CONNECTOR GOOGLE SHEETS (FETCH JSON/CSV) ---
     async function fetchGoogleSheetsData() {
-      if (!SPREADSHEET_ID || SPREADSHEET_ID === "e/2PACX-1vQ6995gfstbDC8lBzvBC6TkuM-8bHDWNr4F-SF8ZKCtIJ2yoYT_fz77DxqNqJ-FWJOXX5W9ftqOk5Fs") {
+      if (!SPREADSHEET_ID || SPREADSHEET_ID === "EL_TEU_SPREADSHEET_ID_AQUI") {
         console.warn("Sense SPREADSHEET_ID configurat. Es fan servir dades d'exemple.");
         renderLeaderboard();
         return;
