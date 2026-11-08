@@ -81,7 +81,7 @@
               Qui és de Petit? 👶
             </h1>
             <p class="text-xs sm:text-sm text-red-100 max-w-md mt-1">
-              Obre la casella de cada dia, descobreix la foto i respon al formulari per sumar punts al rànquing!
+              Descobreix la foto de cada dia i respon al formulari per sumar punts al rànquing!
             </p>
           </div>
         </div>
@@ -99,12 +99,16 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
     <div class="flex border-b border-gray-200 bg-white/80 p-1.5 rounded-2xl shadow-sm backdrop-blur-md justify-center sm:justify-start gap-1 sm:gap-2">
       
-      <button id="tab-calendar-btn" onclick="switchTab('calendar')" class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 bg-festive-green text-white shadow-sm">
-        <i class="fa-solid fa-calendar-days text-yellow-400"></i> 1. Calendari (1-24)
+      <button id="tab-calendar-btn" onclick="switchTab('calendar')" class="tab-btn flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-festive-green text-white shadow-sm">
+        <i class="fa-solid fa-calendar-days text-yellow-400"></i> 1. Calendari
       </button>
 
-      <button id="tab-ranking-btn" onclick="switchTab('ranking')" class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
+      <button id="tab-ranking-btn" onclick="switchTab('ranking')" class="tab-btn flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
         <i class="fa-solid fa-trophy text-yellow-500"></i> 2. Rànquing En Directe
+      </button>
+
+      <button id="tab-register-btn" onclick="switchTab('register')" class="tab-btn flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
+        <i class="fa-solid fa-user-plus text-festive-red"></i> 3. El teu Pseudònim
       </button>
 
     </div>
@@ -113,7 +117,7 @@
   <!-- CONTINGUT PRINCIPAL -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-1 w-full">
 
-    <!-- SECCIÓ 1: CALENDARI D'ADVENT (24 CASELLES) -->
+    <!-- SECCIÓ 1: CALENDARI D'ADVENT -->
     <section id="section-calendar" class="space-y-6">
       <div class="glass-card rounded-3xl p-6 festive-shadow">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4 mb-6">
@@ -140,7 +144,6 @@
       </div>
     </section>
 
-
     <!-- SECCIÓ 2: CLASSIFICACIÓ I RÀNQUING -->
     <section id="section-ranking" class="space-y-6 hidden">
       <div class="glass-card rounded-3xl p-6 festive-shadow bg-gradient-to-b from-white/90 to-amber-50/40">
@@ -156,11 +159,11 @@
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <div>
             <h3 class="text-xl font-bold text-gray-900">Classificació General</h3>
-            <p class="text-xs text-gray-500">Suma de punts segons encerts a través del formulari.</p>
+            <p class="text-xs text-gray-500">Actualitzat automàticament des de les respostes de Google Sheets.</p>
           </div>
-          <a href="#" target="_blank" id="form-direct-link-1" class="px-4 py-2 bg-festive-green hover:bg-festive-lightgreen text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
-            <i class="fa-solid fa-pen-to-square"></i> Enviar nova resposta
-          </a>
+          <button onclick="fetchGoogleSheetsData()" class="px-4 py-2 bg-festive-green hover:bg-festive-lightgreen text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-rotate"></i> Actualitzar Dades
+          </button>
         </div>
 
         <div class="overflow-x-auto">
@@ -168,7 +171,7 @@
             <thead>
               <tr class="border-b border-gray-200 text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 <th class="py-3 px-4">Posició</th>
-                <th class="py-3 px-4">Participant</th>
+                <th class="py-3 px-4">Participant (Pseudònim)</th>
                 <th class="py-3 px-4 text-center">Encerts</th>
                 <th class="py-3 px-4 text-center">Raja (Streak)</th>
                 <th class="py-3 px-4 text-right">Punts Totals</th>
@@ -178,6 +181,39 @@
               <!-- Renderitzat per JS -->
             </tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓ 3: REGISTRE DE PSEUDÒNIM -->
+    <section id="section-register" class="space-y-6 hidden max-w-xl mx-auto">
+      <div class="glass-card rounded-3xl p-6 sm:p-8 festive-shadow text-center">
+        <div class="w-16 h-16 bg-festive-red/10 text-festive-red rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-festive-red/20">
+          <i class="fa-solid fa-user-ninja"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900">Tria el teu Pseudònim Divertit!</h2>
+        <p class="text-xs text-gray-500 mt-1 mb-6">
+          Registra el teu nom i el pseudònim amb el qual respondràs al Google Form per sortir al Rànquing.
+        </p>
+
+        <form id="register-form" onsubmit="saveUserRegistration(event)" class="space-y-4 text-left">
+          <div>
+            <label class="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1">El teu Nom Real</label>
+            <input type="text" id="reg-real-name" placeholder="Ex: Marta Pérez" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-festive-green focus:border-transparent outline-none text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1">El teu Pseudònim Divertit</label>
+            <input type="text" id="reg-alias" placeholder="Ex: El Grinch del Vallès 🎄" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-festive-green focus:border-transparent outline-none text-sm">
+          </div>
+
+          <button type="submit" class="w-full py-3.5 bg-festive-green hover:bg-festive-lightgreen text-white font-extrabold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2 mt-2">
+            <i class="fa-solid fa-floppy-disk"></i> Desar el meu Pseudònim
+          </button>
+        </form>
+
+        <div id="register-success" class="hidden mt-4 p-4 bg-green-100 border border-green-300 rounded-xl text-green-800 text-xs font-bold">
+          ✨ Guardat correctament! Ara utilitza aquest pseudònim quan responguis al formulari.
         </div>
       </div>
     </section>
@@ -200,10 +236,24 @@
 
   <!-- LÒGICA JAVASCRIPT -->
   <script>
-    const PLAYERS = ["Laura G.", "Pau M.", "Sofia B.", "Marc R.", "Carla S.", "Jordi T.", "Marta P.", "David L."];
-    const GOOGLE_FORM_URL = "https://forms.google.com";
+    // --- 1. CONFIGURACIÓ DE GOOGLE FORMS I GOOGLE SHEETS ---
+    // Enllaç públic del teu Google Form:
+    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdb-jxstBzMY5tmCTTo04pIfsWftche_9jC-Ah60nuPFU9V6g/viewform?usp=dialog";
 
-    // Configuració de les 24 Finestres de l'Advent
+    // Posa aquí l'ID del teu Google Sheet (El codi entre /d/ i /edit de la URL del full):
+    const SPREADSHEET_ID = "EL_TEU_SPREADSHEET_ID_AQUI"; 
+
+    // Registres inicials de prova
+    let userRegistrations = JSON.parse(localStorage.getItem('advent_user_regs')) || [
+      { realName: "Laura G.", alias: "La Reina de la Festa 👑" },
+      { realName: "Pau M.", alias: "El Grinch 🎄" },
+      { realName: "Sofia B.", alias: "Super Sofia ⚡" }
+    ];
+
+    // Array on es guardaran les respostes descarregades de Google Sheets
+    let submittedGuesses = [];
+
+    // Solucions correctes per a cada dia (Pots anar emplenant les solucions reals aquí)
     const adventDays = Array.from({ length: 24 }, (_, i) => {
       const dayNum = i + 1;
       return {
@@ -211,47 +261,118 @@
         title: `Dia ${dayNum}: Qui s'amaga aquí?`,
         image: `https://images.unsplash.com/photo-${1519689680058 + (i*1000)}?auto=format&fit=crop&w=600&q=80`,
         fallbackImg: "https://images.unsplash.com/photo-1512474932049-78ac69eed88d?auto=format&fit=crop&w=600&q=80",
-        solution: PLAYERS[i % PLAYERS.length],
+        solution: "Laura G.", // Solució real d'aquest dia
         hint: `Pista especial de l'host per al dia ${dayNum}.`
       };
     });
 
-    let submittedGuesses = [
-      { day: 1, user: "Pau M.", guess: "Laura G." },
-      { day: 1, user: "Sofia B.", guess: "Laura G." },
-      { day: 2, user: "Marc R.", guess: "Pau M." }
-    ];
-
     let isSnowing = true;
     let countdownInterval = null;
 
-    // --- CÀLCUL DE DESBLOQUEIG DE DIA ---
+    function normalizeName(str) {
+      if (!str) return "";
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    }
+
     function getUnlockDateForDay(dayNum) {
-      // Any actual o 2026 per defecte (Desembre té mes 11 en JavaScript)
       const currentYear = new Date().getFullYear();
       return new Date(currentYear, 11, dayNum, 0, 0, 0); 
     }
 
     function isDayUnlocked(dayNum) {
       const now = new Date();
-      const unlockDate = getUnlockDateForDay(dayNum);
-      return now >= unlockDate;
+      return now >= getUnlockDateForDay(dayNum);
     }
 
-    // --- INICIALITZACIÓ ---
-    window.onload = function() {
-      const formBtn1 = document.getElementById('form-direct-link-1');
-      if (formBtn1) formBtn1.href = GOOGLE_FORM_URL;
+    // --- 2. CONNECTOR GOOGLE SHEETS (FETCH JSON/CSV) ---
+    async function fetchGoogleSheetsData() {
+      if (!SPREADSHEET_ID || SPREADSHEET_ID === "e/2PACX-1vQ6995gfstbDC8lBzvBC6TkuM-8bHDWNr4F-SF8ZKCtIJ2yoYT_fz77DxqNqJ-FWJOXX5W9ftqOk5Fs") {
+        console.warn("Sense SPREADSHEET_ID configurat. Es fan servir dades d'exemple.");
+        renderLeaderboard();
+        return;
+      }
 
+      try {
+        // Enllaç per llegir el Google Sheet publicat en format CSV
+        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/pub?output=csv`;
+        const response = await fetch(url);
+        const data = await response.text();
+
+        // Convertir les línies de l'Excel en dades JS
+        const rows = data.split('\n').map(row => row.split(','));
+        
+        // Suposem que les columnes de l'Excel són:
+        // Columna 0: Marca temporal | Columna 1: Pseudònim | Columna 2: Dia | Columna 3: Resposta
+        submittedGuesses = [];
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (row.length >= 4) {
+            const user = row[1].replace(/"/g, '').trim();
+            const day = parseInt(row[2].replace(/"/g, '').trim());
+            const guess = row[3].replace(/"/g, '').trim();
+
+            if (user && !isNaN(day) && guess) {
+              submittedGuesses.push({ day, user, guess });
+            }
+          }
+        }
+
+        renderLeaderboard();
+      } catch (err) {
+        console.error("Error carregant les dades de Google Sheets:", err);
+      }
+    }
+
+    window.onload = function() {
       renderAdventGrid();
-      renderLeaderboard();
       startSnowfall();
+      loadUserSavedForm();
+      fetchGoogleSheetsData(); // Descarrega dades de l'Excel al carregar
     };
 
-    // --- NAVEGACIÓ ENTRE PESTANYES ---
+    function saveUserRegistration(e) {
+      e.preventDefault();
+      const realName = document.getElementById('reg-real-name').value;
+      const alias = document.getElementById('reg-alias').value;
+
+      if (!realName || !alias) return;
+
+      const normAlias = normalizeName(alias);
+      const existingIdx = userRegistrations.findIndex(r => normalizeName(r.alias) === normAlias);
+
+      if (existingIdx >= 0) {
+        userRegistrations[existingIdx] = { realName, alias };
+      } else {
+        userRegistrations.push({ realName, alias });
+      }
+
+      localStorage.setItem('advent_user_regs', JSON.stringify(userRegistrations));
+      localStorage.setItem('my_registered_alias', alias);
+
+      const alertBox = document.getElementById('register-success');
+      alertBox.classList.remove('hidden');
+      setTimeout(() => alertBox.classList.add('hidden'), 4000);
+
+      renderLeaderboard();
+    }
+
+    function loadUserSavedForm() {
+      const savedAlias = localStorage.getItem('my_registered_alias');
+      if (savedAlias) {
+        const found = userRegistrations.find(r => normalizeName(r.alias) === normalizeName(savedAlias));
+        if (found) {
+          document.getElementById('reg-real-name').value = found.realName;
+          document.getElementById('reg-alias').value = found.alias;
+        }
+      }
+    }
+
     function switchTab(tabName) {
-      // Amagar totes les seccions existents
-      ['calendar', 'ranking'].forEach(t => {
+      ['calendar', 'ranking', 'register'].forEach(t => {
         const sec = document.getElementById(`section-${t}`);
         const btn = document.getElementById(`tab-${t}-btn`);
         if (sec) sec.classList.add('hidden');
@@ -261,7 +382,6 @@
         }
       });
 
-      // Activar la secció seleccionada
       const activeSection = document.getElementById(`section-${tabName}`);
       const activeBtn = document.getElementById(`tab-${tabName}-btn`);
       
@@ -271,10 +391,11 @@
         activeBtn.classList.add('bg-festive-green', 'text-white', 'shadow-sm');
       }
 
-      if (tabName === 'ranking') renderLeaderboard();
+      if (tabName === 'ranking') {
+        fetchGoogleSheetsData();
+      }
     }
 
-    // --- RENDERITZAR GRID DE DIES ---
     function renderAdventGrid() {
       const grid = document.getElementById('advent-grid');
       grid.innerHTML = '';
@@ -283,17 +404,14 @@
         const unlocked = isDayUnlocked(d.day);
 
         if (unlocked) {
-          // FINESTRA DESBLOQUEJADA
           grid.innerHTML += `
             <div onclick="openDayModal(${d.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-festive-gold/40">
               <div class="absolute top-2 left-2 bg-gradient-to-r from-festive-red to-festive-darkred text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md border border-yellow-300">
                 ${d.day}
               </div>
-              
               <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-festive-gold shadow-md group-hover:scale-105 transition bg-gray-900 flex items-center justify-center">
                 <img src="${d.image}" onerror="this.src='${d.fallbackImg}'" class="w-full h-full object-cover">
               </div>
-
               <div class="w-full">
                 <p class="text-xs font-bold text-gray-800 line-clamp-1">${d.title}</p>
                 <span class="inline-block mt-2 px-3 py-1 bg-festive-green/10 text-festive-green text-[11px] font-extrabold rounded-lg group-hover:bg-festive-green group-hover:text-white transition">
@@ -303,17 +421,14 @@
             </div>
           `;
         } else {
-          // FINESTRA BLOQUEJADA
           grid.innerHTML += `
             <div onclick="openDayModal(${d.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-gray-300 bg-gray-100/80 opacity-85">
               <div class="absolute top-2 left-2 bg-gray-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md">
                 ${d.day}
               </div>
-              
               <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-200 border-2 border-gray-400 flex items-center justify-center text-gray-500 text-2xl shadow-inner">
                 <i class="fa-solid fa-lock"></i>
               </div>
-
               <div class="w-full">
                 <p class="text-xs font-bold text-gray-500 line-clamp-1">Dia ${d.day} de Desembre</p>
                 <span class="inline-block mt-2 px-3 py-1 bg-gray-200 text-gray-600 text-[11px] font-extrabold rounded-lg group-hover:bg-gray-300 transition">
@@ -326,7 +441,6 @@
       });
     }
 
-    // --- MODAL DIA (DISPONIBLE O COMPTE ENRERE) ---
     function openDayModal(dayNum) {
       const dayObj = adventDays.find(d => d.day === dayNum);
       if (!dayObj) return;
@@ -337,7 +451,6 @@
       if (countdownInterval) clearInterval(countdownInterval);
 
       if (unlocked) {
-        // Modal de foto i resposta
         modalContent.innerHTML = `
           <div class="text-center space-y-4">
             <span class="inline-block px-4 py-1 bg-festive-red text-white text-xs font-extrabold rounded-full uppercase tracking-wider">
@@ -361,7 +474,6 @@
           </div>
         `;
       } else {
-        // Modal de Compte Enrere
         modalContent.innerHTML = `
           <div class="text-center space-y-4 py-2">
             <div class="w-16 h-16 bg-red-100 text-festive-red rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner border border-red-200">
@@ -420,24 +532,36 @@
       if (countdownInterval) clearInterval(countdownInterval);
     }
 
-    // --- RÀNQUING I PUNTUACIONS ---
     function calculateScores() {
       const scores = {};
-      PLAYERS.forEach(p => {
-        scores[p] = { name: p, points: 0, correct: 0, streak: 0, totalGuesses: 0 };
+
+      userRegistrations.forEach(r => {
+        const normKey = normalizeName(r.alias);
+        scores[normKey] = { name: r.alias, points: 0, correct: 0, streak: 0, totalGuesses: 0 };
       });
 
       adventDays.forEach(dayObj => {
-        PLAYERS.forEach(player => {
-          const playerGuess = submittedGuesses.find(g => g.day === dayObj.day && g.user === player);
-          if (playerGuess) {
-            scores[player].totalGuesses++;
-            if (playerGuess.guess.toLowerCase().trim() === dayObj.solution.toLowerCase().trim()) {
-              scores[player].correct++;
-              scores[player].streak++;
-              scores[player].points += 100 + (scores[player].streak * 10);
-            } else {
-              scores[player].streak = 0;
+        const processedToday = new Set();
+
+        submittedGuesses.forEach(g => {
+          if (g.day === dayObj.day) {
+            const normUserKey = normalizeName(g.user);
+
+            if (!scores[normUserKey]) {
+              scores[normUserKey] = { name: g.user, points: 0, correct: 0, streak: 0, totalGuesses: 0 };
+            }
+
+            if (!processedToday.has(normUserKey)) {
+              processedToday.add(normUserKey);
+              scores[normUserKey].totalGuesses++;
+
+              if (normalizeName(g.guess) === normalizeName(dayObj.solution)) {
+                scores[normUserKey].correct++;
+                scores[normUserKey].streak++;
+                scores[normUserKey].points += 100 + (scores[normUserKey].streak * 10);
+              } else {
+                scores[normUserKey].streak = 0;
+              }
             }
           }
         });
@@ -510,7 +634,6 @@
       });
     }
 
-    // --- ANIMACIÓ DE NEU ---
     function startSnowfall() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
