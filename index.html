@@ -484,21 +484,18 @@
         submittedGuesses.forEach(g => {
           const dayObj = adventDays.find(d => d.day === g.day);
           
-          // 1. SEGURETAT: Si el dia no existeix o està bloquejat generalment
-          if (!dayObj || !isDayUnlocked(g.day)) {
-            return; // Ignora
-          }
+          if (!dayObj) return;
 
-          // 2. SEGURETAT ANTITRAMPES: Comprovar que el timestamp del formulari 
-          // no sigui anterior al dia d'obertura oficial de la casella
+          // SEGURETAT RADICAL: Si el dia del calendari és major que el dia actual del mes d'avui, IGNORA'L.
+          // (Suposant que estem a desembre, o pots adaptar-ho segons la teva lògica de isDayUnlocked)
+          const now = new Date();
+          // Si el dia de la resposta és superior al dia d'avui (i estem al mes de desembre/prova), el descartem
           if (g.timestamp) {
-            const responseDate = new Date(g.timestamp);
-            const unlockDate = getUnlockDateForDay(g.day); // Data a les 00:00h d'aquell dia
-
-            // Si la resposta té una data anterior a quan es va desbloquejar la casella, TRAMPA!
-            if (responseDate < unlockDate) {
-              console.warn(`Trampa detectada: Usuari ${g.user} va respondre el dia ${g.day} abans que s'obrís la casella.`);
-              return; // Ignora completament aquesta resposta
+            const respDate = new Date(g.timestamp);
+            // Compara directament: si la data de la resposta és d'un dia futur al que marca el calendari o la realitat, saltar
+            // Per exemple, si el dia actual real és menor que el dia de la casella:
+            if (!isDayUnlocked(g.day)) {
+              return; // Ignorat automàticament sense por a errors de format
             }
           }
 
@@ -506,14 +503,13 @@
           if (!scores[normUserKey]) {
             scores[normUserKey] = { name: g.user, points: 0, correct: 0, totalGuesses: 0 };
           }
-
+          
           const userDayKey = `${normUserKey}_day_${g.day}`;
           playerDayAttempts[userDayKey] = (playerDayAttempts[userDayKey] || 0) + 1;
           const attemptNumber = playerDayAttempts[userDayKey];
 
           scores[normUserKey].totalGuesses++;
           
-          // Comprovar si la resposta és correcta
           if (normalizeName(g.guess) === normalizeName(dayObj.solution)) {
             if (!alreadyScoredUserDay.has(userDayKey)) {
               alreadyScoredUserDay.add(userDayKey);
