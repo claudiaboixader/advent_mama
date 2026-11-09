@@ -202,9 +202,13 @@
     // -------------------------------------------------------------
     // RECORDA CANVIAR AQUESTS DOS VALORS AMB ELS TEUS ENLLAÇOS REALS:
     // -------------------------------------------------------------
-    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdb-jxstBzMY5tmCTTo04pIfsWftche_9jC-Ah60nuPFU9V6g/viewform?usp=dialog";
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBPPu4n_GffQ3-jov1BxE8aUsjE4rPvVWooPYwYMrazSf4FpZmGQ1ljcGIh_-T5BqZ/exec"; 
+    // Posa aquí l'enllaç base del teu Google Form (obtingut del Pas 1, fins abans de &entry...)
+    const GOOGLE_FORM_BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdb-jxstBzMY5tmCTTo04pIfsWftche_9jC-Ah60nuPFU9V6g/viewform?usp=pp_url";
     
+    // Canvia 'entry.123456789' pel teu codi real de Google Forms:
+    const ENTRY_DAY_ID = "entry.1168361190";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBPPu4n_GffQ3-jov1BxE8aUsjE4rPvVWooPYwYMrazSf4FpZmGQ1ljcGIh_-T5BqZ/exec"; 
+
     let submittedGuesses = [];
 
     // Configuració de les 24 Finestres de l'Advent
@@ -390,7 +394,7 @@
               <p class="text-amber-800 mt-0.5">${dayObj.hint}</p>
             </div>
 
-            <a href="${GOOGLE_FORM_URL}" target="_blank" onclick="closeModal()" class="w-full py-3.5 bg-gradient-to-r from-festive-green to-festive-lightgreen hover:from-festive-lightgreen hover:to-festive-green text-white font-extrabold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2">
+            <a href="${GOOGLE_FORM_BASE_URL}&${ENTRY_DAY_ID}=${dayObj.day}" target="_blank" onclick="closeModal()" class="w-full py-3.5 bg-gradient-to-r from-festive-green to-festive-lightgreen hover:from-festive-lightgreen hover:to-festive-green text-white font-extrabold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2">
               <i class="fa-solid fa-paper-plane text-yellow-300"></i> Respondre al formulari (Dia ${dayObj.day})
             </a>
           </div>
