@@ -530,18 +530,26 @@
 
       let html = '';
 
-      // Obtenim la data d'avui a Espanya per identificar el "dia actual"
+      // 1. Obtenim la data actual (o adaptada a Espanya)
       const nowInSpainStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" });
-      const nowSpain = new Date(nowInSpainStr);
-      const currentDay = nowSpain.getDate();
-      const currentMonth = nowSpain.getMonth(); // 11 = Desembre
-      const currentYear = nowSpain.getFullYear();
+      const now = new Date(nowInSpainStr);
+
+      // 2. Determinem quin és el "dia actiu" (Avui) de manera compatible amb el teu sistema de proves
+      // Si vols fer servir el DIA_DE_PROVA actual:
+      const DIA_DE_PROVA = 27; // El mateix valor que tens a isDayUnlocked
+      const activeDay = DIA_DE_PROVA; 
+      // *(Nota: Si un dia tornes a activar el calendari real per hores, 
+      // pots calcular el dia actiu comprovant quina és la darrera casella on getUnlockDateForDay(d) <= now)*
 
       adventDays.forEach(dayObj => {
         const isUnlocked = isDayUnlocked(dayObj.day);
         
-        // Comprovem si és exactament el dia d'avui (suposant desembre)
-        const isToday = (currentMonth === 10 && currentYear === nowSpain.getFullYear() && dayObj.day === currentDay);
+        // Identifiquem els 3 estats:
+        // - Cas 1: És exactament el dia de prova/avui actiu
+        const isToday = (dayObj.day === activeDay);
+        
+        // - Cas 2: Està obert però no és el dia d'avui (dies passats)
+        // - Cas 3: Està tancat (dies futurs)
         
         let cellClass = "relative rounded-2xl p-4 flex flex-col items-center justify-center transition-all shadow-md ";
         let iconHtml = "";
@@ -549,21 +557,21 @@
 
         if (isToday) {
           // ==========================================
-          // CAS 1: DIA ACTUAL (Previsualització / Obert però misteriós)
+          // CAS 1: DIA ACTUAL (Previsualització / Vora groga i animació)
           // ==========================================
           cellClass += "bg-gradient-to-br from-red-600 to-red-800 text-white cursor-pointer hover:scale-105 ring-4 ring-yellow-400 animate-pulse";
           contentHtml += `<span class="text-xs mt-2 font-bold bg-yellow-400 text-red-900 px-2 py-0.5 rounded-full shadow">Avui! 🎁</span>`;
         
         } else if (isUnlocked) {
           // ==========================================
-          // CAS 2: DIES PASSATS (Oberts, mostren la solució)
+          // CAS 2: DIES PASSATS (Mostren la solució)
           // ==========================================
           cellClass += "bg-gradient-to-br from-red-700 to-red-900 text-white cursor-pointer hover:scale-105 opacity-90";
           contentHtml += `<span class="text-xs mt-2 font-bold bg-black/30 px-2 py-0.5 rounded-full text-yellow-300">${dayObj.solution}</span>`;
         
         } else {
           // ==========================================
-          // CAS 3: DIES PER VENIR (Futurs / Tancats amb cadenat)
+          // CAS 3: DIES PER VENIR (Tancats amb el teu cadenat)
           // ==========================================
           cellClass += "bg-gray-200 text-gray-400 cursor-not-allowed opacity-60";
           iconHtml = `<div class="absolute top-2 right-2 text-gray-400 text-xs"><i class="fas fa-lock"></i></div>`;
