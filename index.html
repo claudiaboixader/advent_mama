@@ -525,25 +525,48 @@
     
     function renderAdventGrid() {
       const grid = document.getElementById('advent-grid');
+      if (!grid) return;
       grid.innerHTML = '';
 
-      let html = ''; // <-- 1. Creem la variable per acumular el HTML
+      let html = '';
+
+      // Obtenim la data d'avui a Espanya per identificar el "dia actual"
+      const nowInSpainStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" });
+      const nowSpain = new Date(nowInSpainStr);
+      const currentDay = nowSpain.getDate();
+      const currentMonth = nowSpain.getMonth(); // 11 = Desembre
+      const currentYear = nowSpain.getFullYear();
 
       adventDays.forEach(dayObj => {
         const isUnlocked = isDayUnlocked(dayObj.day);
-      
+        
+        // Comprovem si és exactament el dia d'avui (suposant desembre)
+        const isToday = (currentMonth === 11 && currentYear === nowSpain.getFullYear() && dayObj.day === currentDay);
+        
         let cellClass = "relative rounded-2xl p-4 flex flex-col items-center justify-center transition-all shadow-md ";
         let iconHtml = "";
         let contentHtml = `<span class="text-3xl font-extrabold">${dayObj.day}</span>`;
 
-        if (isUnlocked) {
-          // Estil obert: El dia ja ha arribat, mostrem el número I LA SOLUCIÓ (el nom)
-          cellClass += "bg-gradient-to-br from-red-600 to-red-800 text-white cursor-pointer hover:scale-105";
+        if (isToday) {
+          // ==========================================
+          // CAS 1: DIA ACTUAL (Previsualització / Obert però misteriós)
+          // ==========================================
+          cellClass += "bg-gradient-to-br from-red-600 to-red-800 text-white cursor-pointer hover:scale-105 ring-4 ring-yellow-400 animate-pulse";
+          contentHtml += `<span class="text-xs mt-2 font-bold bg-yellow-400 text-red-900 px-2 py-0.5 rounded-full shadow">Avui! 🎁</span>`;
+        
+        } else if (isUnlocked) {
+          // ==========================================
+          // CAS 2: DIES PASSATS (Oberts, mostren la solució)
+          // ==========================================
+          cellClass += "bg-gradient-to-br from-red-700 to-red-900 text-white cursor-pointer hover:scale-105 opacity-90";
           contentHtml += `<span class="text-xs mt-2 font-bold bg-black/30 px-2 py-0.5 rounded-full text-yellow-300">${dayObj.solution}</span>`;
+        
         } else {
-          // Estil tancat (futur): Gris amb cadenat
+          // ==========================================
+          // CAS 3: DIES PER VENIR (Futurs / Tancats amb cadenat)
+          // ==========================================
           cellClass += "bg-gray-200 text-gray-400 cursor-not-allowed opacity-60";
-          iconHtml = `<div class="absolute top-2 right-2 text-gray-400 text-xs"><i class="fa-solid fa-lock"></i></div>`;
+          iconHtml = `<div class="absolute top-2 right-2 text-gray-400 text-xs"><i class="fas fa-lock"></i></div>`;
         }
 
         html += `
@@ -554,7 +577,7 @@
         `;
       });
 
-      grid.innerHTML = html; // <-- 2. Assignem tot el HTML acumulat a la graella al final!
+      grid.innerHTML = html;
     }
 
     function openDayModal(dayNum) {
