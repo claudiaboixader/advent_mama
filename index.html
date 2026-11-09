@@ -522,10 +522,12 @@
         fetchGoogleSheetsData();
       }
     }
-
+    
     function renderAdventGrid() {
       const grid = document.getElementById('advent-grid');
       grid.innerHTML = '';
+
+      let html = ''; // <-- 1. Creem la variable per acumular el HTML
 
       adventDays.forEach(dayObj => {
         const isUnlocked = isDayUnlocked(dayObj.day);
@@ -551,6 +553,8 @@
           </div>
         `;
       });
+
+      grid.innerHTML = html; // <-- 2. Assignem tot el HTML acumulat a la graella al final!
     }
 
     function openDayModal(dayNum) {
