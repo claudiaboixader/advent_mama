@@ -483,20 +483,21 @@
 
         submittedGuesses.forEach(g => {
           const dayObj = adventDays.find(d => d.day === g.day);
-          
           if (!dayObj) return;
 
-          // SEGURETAT RADICAL: Si el dia del calendari és major que el dia actual del mes d'avui, IGNORA'L.
-          // (Suposant que estem a desembre, o pots adaptar-ho segons la teva lògica de isDayUnlocked)
-          const now = new Date();
-          // Si el dia de la resposta és superior al dia d'avui (i estem al mes de desembre/prova), el descartem
+          // SEGURETAT ESTRICTA: El dia de la resposta ha de coincidir 
+          // exactament amb el dia del calendari en què es va enviar el formulari.
           if (g.timestamp) {
             const respDate = new Date(g.timestamp);
-            // Compara directament: si la data de la resposta és d'un dia futur al que marca el calendari o la realitat, saltar
-            // Per exemple, si el dia actual real és menor que el dia de la casella:
-            if (!isDayUnlocked(g.day)) {
-              return; // Ignorat automàticament sense por a errors de format
+            const respDay = respDate.getDate(); // Dia del mes en què es va enviar (1, 2, 3...)
+
+            // Si el dia del formulari (g.day) NO coincideix amb el dia real de tramesa (respDay),
+            // es descarta immediatament i per a sempre.
+            if (respDay !== g.day) {
+              return; // Ignorat! No s'accepta cap resposta fora del seu dia exacte.
             }
+          } else {
+            return; // Si no hi ha timestamp, per seguretat el descartem
           }
 
           const normUserKey = normalizeName(g.user);
