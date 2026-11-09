@@ -581,20 +581,19 @@
           // CAS 2: DIES PASSATS (Oberts, mostren la solució / el nom)
           // ==========================================
           html += `
-            <div onclick="openDayModal(${dayObj.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-red-300 bg-gradient-to-br from-red-600 to-red-800 text-white shadow-md hover:scale-105 transition-all">
+            <div onclick="openDayModal(${dayObj.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-green-400 bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-md hover:scale-105 transition-all">
               <div class="absolute top-2 left-2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md backdrop-blur-sm">
                 ${dayObj.day}
               </div>
-              <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/20 border-2 border-red-400 flex items-center justify-center text-green-300 text-xl font-black shadow-inner backdrop-blur-sm">
-                <i class="fa-solid fa-check"></i>
-              </div>
-              <!-- Rodona amb la foto en miniatura i fallback per si de cas -->
-              <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/20 border-2 border-red-400 overflow-hidden flex items-center justify-center shadow-inner">
+              
+              <!-- Rodona amb la foto en miniatura i vora verda clara -->
+              <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/20 border-2 border-green-300 overflow-hidden flex items-center justify-center shadow-inner">
                 <img src="${dayObj.image}" alt="${dayObj.solution}" class="w-full h-full object-cover" onerror="this.src='images/default.jpg'" />
               </div>
+
               <div class="w-full">
-                <p class="text-xs font-bold text-red-100 line-clamp-1">Dia ${dayObj.day} de Desembre</p>
-                <span class="inline-block mt-2 px-3 py-1 bg-black/30 text-green-300 text-[11px] font-extrabold rounded-lg shadow border border-green-300/30">
+                <p class="text-xs font-bold text-green-100 line-clamp-1">Dia ${dayObj.day} de Desembre</p>
+                <span class="inline-block mt-2 px-3 py-1 bg-black/30 text-yellow-300 text-[11px] font-extrabold rounded-lg shadow border border-yellow-300/30">
                   ✨ ${dayObj.solution}
                 </span>
               </div>
