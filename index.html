@@ -203,8 +203,8 @@
     // RECORDA CANVIAR AQUESTS DOS VALORS AMB ELS TEUS ENLLAÇOS REALS:
     // -------------------------------------------------------------
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdb-jxstBzMY5tmCTTo04pIfsWftche_9jC-Ah60nuPFU9V6g/viewform?usp=dialog";
-    const SPREADSHEET_ID = "e/2PACX-1vQ6995gfstbDC8lBzvBC6TkuM-8bHDWNr4F-SF8ZKCtIJ2yoYT_fz77DxqNqJ-FWJOXX5W9ftqOk5Fs"; 
-
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBPPu4n_GffQ3-jov1BxE8aUsjE4rPvVWooPYwYMrazSf4FpZmGQ1ljcGIh_-T5BqZ/exec"; 
+    
     let submittedGuesses = [];
 
     // Configuració de les 24 Finestres de l'Advent
@@ -248,38 +248,37 @@
     //  return now >= getUnlockDateForDay(dayNum);
     //}
 
-    // Connector amb Google Sheets
     async function fetchGoogleSheetsData() {
-      if (!SPREADSHEET_ID || SPREADSHEET_ID === "EL_TEU_SPREADSHEET_ID_AQUI") {
-        console.warn("Sense SPREADSHEET_ID configurat.");
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("EL_TEU_ID_DE_SCRIPT")) {
+        console.warn("Sense APPS_SCRIPT_URL configurat.");
         renderLeaderboard();
         return;
       }
 
       try {
-        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/pub?output=csv&t=${new Date().getTime()}`;
-        const response = await fetch(url);
-        const data = await response.text();
+        // Demanem les dades directament a l'Apps Script en temps real
+        const response = await fetch(APPS_SCRIPT_URL);
+        const rows = await response.json();
 
-        const rows = data.split('\n').map(row => row.split(','));
-        
         submittedGuesses = [];
+        // Saltem la primera fila (i = 1) perquè són les capçaleres de l'Excel
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (row.length >= 4) {
-            const user = row[1].replace(/"/g, '').trim();
-            const day = parseInt(row[2].replace(/"/g, '').trim());
-            const guess = row[3].replace(/"/g, '').trim();
+            const timestamp = row[0];
+            const user = String(row[1]).trim();
+            const day = parseInt(row[2]);
+            const guess = String(row[3]).trim();
 
             if (user && !isNaN(day) && guess) {
-              submittedGuesses.push({ day, user, guess });
+              submittedGuesses.push({ timestamp, day, user, guess });
             }
           }
         }
 
         renderLeaderboard();
       } catch (err) {
-        console.error("Error carregant les dades de Google Sheets:", err);
+        console.error("Error carregant les dades de l'Apps Script:", err);
       }
     }
 
