@@ -95,20 +95,16 @@
     </div>
   </header>
 
-  <!-- Navegació entre Pestanyes Principals -->
+  <!-- Navegació entre Pestanyes (Només Calendari i Rànquing) -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
     <div class="flex border-b border-gray-200 bg-white/80 p-1.5 rounded-2xl shadow-sm backdrop-blur-md justify-center sm:justify-start gap-1 sm:gap-2">
       
-      <button id="tab-calendar-btn" onclick="switchTab('calendar')" class="tab-btn flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-festive-green text-white shadow-sm">
+      <button id="tab-calendar-btn" onclick="switchTab('calendar')" class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 bg-festive-green text-white shadow-sm">
         <i class="fa-solid fa-calendar-days text-yellow-400"></i> 1. Calendari
       </button>
 
-      <button id="tab-ranking-btn" onclick="switchTab('ranking')" class="tab-btn flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
+      <button id="tab-ranking-btn" onclick="switchTab('ranking')" class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
         <i class="fa-solid fa-trophy text-yellow-500"></i> 2. Rànquing En Directe
-      </button>
-
-      <button id="tab-register-btn" onclick="switchTab('register')" class="tab-btn flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
-        <i class="fa-solid fa-user-plus text-festive-red"></i> 3. El teu Pseudònim
       </button>
 
     </div>
@@ -171,7 +167,7 @@
             <thead>
               <tr class="border-b border-gray-200 text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 <th class="py-3 px-4">Posició</th>
-                <th class="py-3 px-4">Participant (Pseudònim)</th>
+                <th class="py-3 px-4">Participant</th>
                 <th class="py-3 px-4 text-center">Encerts</th>
                 <th class="py-3 px-4 text-center">Raja (Streak)</th>
                 <th class="py-3 px-4 text-right">Punts Totals</th>
@@ -181,39 +177,6 @@
               <!-- Renderitzat per JS -->
             </tbody>
           </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECCIÓ 3: REGISTRE DE PSEUDÒNIM -->
-    <section id="section-register" class="space-y-6 hidden max-w-xl mx-auto">
-      <div class="glass-card rounded-3xl p-6 sm:p-8 festive-shadow text-center">
-        <div class="w-16 h-16 bg-festive-red/10 text-festive-red rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-festive-red/20">
-          <i class="fa-solid fa-user-ninja"></i>
-        </div>
-        <h2 class="text-2xl font-bold text-gray-900">Tria el teu Pseudònim Divertit!</h2>
-        <p class="text-xs text-gray-500 mt-1 mb-6">
-          Registra el teu nom i el pseudònim amb el qual respondràs al Google Form per sortir al Rànquing.
-        </p>
-
-        <form id="register-form" onsubmit="saveUserRegistration(event)" class="space-y-4 text-left">
-          <div>
-            <label class="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1">El teu Nom Real</label>
-            <input type="text" id="reg-real-name" placeholder="Ex: Marta Pérez" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-festive-green focus:border-transparent outline-none text-sm">
-          </div>
-
-          <div>
-            <label class="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1">El teu Pseudònim Divertit</label>
-            <input type="text" id="reg-alias" placeholder="Ex: El Grinch del Vallès 🎄" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-festive-green focus:border-transparent outline-none text-sm">
-          </div>
-
-          <button type="submit" class="w-full py-3.5 bg-festive-green hover:bg-festive-lightgreen text-white font-extrabold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2 mt-2">
-            <i class="fa-solid fa-floppy-disk"></i> Desar el meu Pseudònim
-          </button>
-        </form>
-
-        <div id="register-success" class="hidden mt-4 p-4 bg-green-100 border border-green-300 rounded-xl text-green-800 text-xs font-bold">
-          ✨ Guardat correctament! Ara utilitza aquest pseudònim quan responguis al formulari.
         </div>
       </div>
     </section>
@@ -236,24 +199,15 @@
 
   <!-- LÒGICA JAVASCRIPT -->
   <script>
-    // --- 1. CONFIGURACIÓ DE GOOGLE FORMS I GOOGLE SHEETS ---
-    // Enllaç públic del teu Google Form:
+    // -------------------------------------------------------------
+    // RECORDA CANVIAR AQUESTS DOS VALORS AMB ELS TEUS ENLLAÇOS REALS:
+    // -------------------------------------------------------------
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdb-jxstBzMY5tmCTTo04pIfsWftche_9jC-Ah60nuPFU9V6g/viewform?usp=dialog";
+    const SPREADSHEET_ID = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6995gfstbDC8lBzvBC6TkuM-8bHDWNr4F-SF8ZKCtIJ2yoYT_fz77DxqNqJ-FWJOXX5W9ftqOk5Fs/pub?gid=1961489700&single=true&output=csv"; 
 
-    // Posa aquí l'ID del teu Google Sheet (El codi entre /d/ i /edit de la URL del full):
-    const SPREADSHEET_ID = "e/2PACX-1vQ6995gfstbDC8lBzvBC6TkuM-8bHDWNr4F-SF8ZKCtIJ2yoYT_fz77DxqNqJ-FWJOXX5W9ftqOk5Fs"; 
-
-    // Registres inicials de prova
-    let userRegistrations = JSON.parse(localStorage.getItem('advent_user_regs')) || [
-      { realName: "Laura G.", alias: "La Reina de la Festa 👑" },
-      { realName: "Pau M.", alias: "El Grinch 🎄" },
-      { realName: "Sofia B.", alias: "Super Sofia ⚡" }
-    ];
-
-    // Array on es guardaran les respostes descarregades de Google Sheets
     let submittedGuesses = [];
 
-    // Solucions correctes per a cada dia (Pots anar emplenant les solucions reals aquí)
+    // Configuració de les 24 Finestres de l'Advent
     const adventDays = Array.from({ length: 24 }, (_, i) => {
       const dayNum = i + 1;
       return {
@@ -261,7 +215,7 @@
         title: `Dia ${dayNum}: Qui s'amaga aquí?`,
         image: `https://images.unsplash.com/photo-${1519689680058 + (i*1000)}?auto=format&fit=crop&w=600&q=80`,
         fallbackImg: "https://images.unsplash.com/photo-1512474932049-78ac69eed88d?auto=format&fit=crop&w=600&q=80",
-        solution: "Laura G.", // Solució real d'aquest dia
+        solution: "Laura G.", // Posa la solució real d'aquest dia
         hint: `Pista especial de l'host per al dia ${dayNum}.`
       };
     });
@@ -269,6 +223,7 @@
     let isSnowing = true;
     let countdownInterval = null;
 
+    // Funció per normalitzar text (treure accents, majúscules i espais sobrants)
     function normalizeName(str) {
       if (!str) return "";
       return str
@@ -288,25 +243,21 @@
       return now >= getUnlockDateForDay(dayNum);
     }
 
-    // --- 2. CONNECTOR GOOGLE SHEETS (FETCH JSON/CSV) ---
+    // Connector amb Google Sheets
     async function fetchGoogleSheetsData() {
       if (!SPREADSHEET_ID || SPREADSHEET_ID === "EL_TEU_SPREADSHEET_ID_AQUI") {
-        console.warn("Sense SPREADSHEET_ID configurat. Es fan servir dades d'exemple.");
+        console.warn("Sense SPREADSHEET_ID configurat.");
         renderLeaderboard();
         return;
       }
 
       try {
-        // Enllaç per llegir el Google Sheet publicat en format CSV
         const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/pub?output=csv`;
         const response = await fetch(url);
         const data = await response.text();
 
-        // Convertir les línies de l'Excel en dades JS
         const rows = data.split('\n').map(row => row.split(','));
         
-        // Suposem que les columnes de l'Excel són:
-        // Columna 0: Marca temporal | Columna 1: Pseudònim | Columna 2: Dia | Columna 3: Resposta
         submittedGuesses = [];
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
@@ -330,49 +281,11 @@
     window.onload = function() {
       renderAdventGrid();
       startSnowfall();
-      loadUserSavedForm();
-      fetchGoogleSheetsData(); // Descarrega dades de l'Excel al carregar
+      fetchGoogleSheetsData();
     };
 
-    function saveUserRegistration(e) {
-      e.preventDefault();
-      const realName = document.getElementById('reg-real-name').value;
-      const alias = document.getElementById('reg-alias').value;
-
-      if (!realName || !alias) return;
-
-      const normAlias = normalizeName(alias);
-      const existingIdx = userRegistrations.findIndex(r => normalizeName(r.alias) === normAlias);
-
-      if (existingIdx >= 0) {
-        userRegistrations[existingIdx] = { realName, alias };
-      } else {
-        userRegistrations.push({ realName, alias });
-      }
-
-      localStorage.setItem('advent_user_regs', JSON.stringify(userRegistrations));
-      localStorage.setItem('my_registered_alias', alias);
-
-      const alertBox = document.getElementById('register-success');
-      alertBox.classList.remove('hidden');
-      setTimeout(() => alertBox.classList.add('hidden'), 4000);
-
-      renderLeaderboard();
-    }
-
-    function loadUserSavedForm() {
-      const savedAlias = localStorage.getItem('my_registered_alias');
-      if (savedAlias) {
-        const found = userRegistrations.find(r => normalizeName(r.alias) === normalizeName(savedAlias));
-        if (found) {
-          document.getElementById('reg-real-name').value = found.realName;
-          document.getElementById('reg-alias').value = found.alias;
-        }
-      }
-    }
-
     function switchTab(tabName) {
-      ['calendar', 'ranking', 'register'].forEach(t => {
+      ['calendar', 'ranking'].forEach(t => {
         const sec = document.getElementById(`section-${t}`);
         const btn = document.getElementById(`tab-${t}-btn`);
         if (sec) sec.classList.add('hidden');
@@ -535,9 +448,12 @@
     function calculateScores() {
       const scores = {};
 
-      userRegistrations.forEach(r => {
-        const normKey = normalizeName(r.alias);
-        scores[normKey] = { name: r.alias, points: 0, correct: 0, streak: 0, totalGuesses: 0 };
+      submittedGuesses.forEach(g => {
+        const normUserKey = normalizeName(g.user);
+
+        if (!scores[normUserKey]) {
+          scores[normUserKey] = { name: g.user, points: 0, correct: 0, streak: 0, totalGuesses: 0 };
+        }
       });
 
       adventDays.forEach(dayObj => {
@@ -547,20 +463,18 @@
           if (g.day === dayObj.day) {
             const normUserKey = normalizeName(g.user);
 
-            if (!scores[normUserKey]) {
-              scores[normUserKey] = { name: g.user, points: 0, correct: 0, streak: 0, totalGuesses: 0 };
-            }
-
             if (!processedToday.has(normUserKey)) {
               processedToday.add(normUserKey);
-              scores[normUserKey].totalGuesses++;
+              if (scores[normUserKey]) {
+                scores[normUserKey].totalGuesses++;
 
-              if (normalizeName(g.guess) === normalizeName(dayObj.solution)) {
-                scores[normUserKey].correct++;
-                scores[normUserKey].streak++;
-                scores[normUserKey].points += 100 + (scores[normUserKey].streak * 10);
-              } else {
-                scores[normUserKey].streak = 0;
+                if (normalizeName(g.guess) === normalizeName(dayObj.solution)) {
+                  scores[normUserKey].correct++;
+                  scores[normUserKey].streak++;
+                  scores[normUserKey].points += 100 + (scores[normUserKey].streak * 10);
+                } else {
+                  scores[normUserKey].streak = 0;
+                }
               }
             }
           }
