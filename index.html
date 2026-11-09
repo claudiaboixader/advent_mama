@@ -212,15 +212,15 @@
 
     // Configuració de les 24 Finestres de l'Advent
     const adventDays = Array.from({ length: 24 }, (_, i) => {
-      const dayNum = i + 1;
-      return {
-        day: dayNum,
-        title: `Dia ${dayNum}: Qui s'amaga aquí?`,
-        image: `https://images.unsplash.com/photo-${1519689680058 + (i*1000)}?auto=format&fit=crop&w=600&q=80`,
-        fallbackImg: "https://images.unsplash.com/photo-1512474932049-78ac69eed88d?auto=format&fit=crop&w=600&q=80",
-        solution: "Laura G", // Posa la solució real d'aquest dia
-        hint: `Pista especial de l'host per al dia ${dayNum}.`
-      };
+      const adventDays = [
+      {
+        day: 1,
+        title: "Dia 1: Qui s'amaga aquí?",
+        image: "images/claudia.png", // Nom de la foto a la carpeta images
+        solution: "Clàudia",         // Nom real de la persona
+        hint: "Pista del dia 1: Li encanta el cafè."
+      }
+    ];
     });
 
     let isSnowing = true;
