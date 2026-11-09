@@ -482,10 +482,24 @@
         const alreadyScoredUserDay = new Set(); 
 
         submittedGuesses.forEach(g => {
-          // SEGURETAT EXTRA: Ignorar immediatament qualsevol dia no vàlid o futur
           const dayObj = adventDays.find(d => d.day === g.day);
+          
+          // 1. SEGURETAT: Si el dia no existeix o està bloquejat generalment
           if (!dayObj || !isDayUnlocked(g.day)) {
-            return; // Salta aquesta fila i evita que trenqui res
+            return; // Ignora
+          }
+
+          // 2. SEGURETAT ANTITRAMPES: Comprovar que el timestamp del formulari 
+          // no sigui anterior al dia d'obertura oficial de la casella
+          if (g.timestamp) {
+            const responseDate = new Date(g.timestamp);
+            const unlockDate = getUnlockDateForDay(g.day); // Data a les 00:00h d'aquell dia
+
+            // Si la resposta té una data anterior a quan es va desbloquejar la casella, TRAMPA!
+            if (responseDate < unlockDate) {
+              console.warn(`Trampa detectada: Usuari ${g.user} va respondre el dia ${g.day} abans que s'obrís la casella.`);
+              return; // Ignora completament aquesta resposta
+            }
           }
 
           const normUserKey = normalizeName(g.user);
