@@ -169,7 +169,6 @@
                 <th class="py-3 px-4">Posició</th>
                 <th class="py-3 px-4">Participant</th>
                 <th class="py-3 px-4 text-center">Encerts</th>
-                <th class="py-3 px-4 text-center">Raja (Streak)</th>
                 <th class="py-3 px-4 text-right">Punts Totals</th>
               </tr>
             </thead>
@@ -243,7 +242,7 @@
     }
 
     function isDayUnlocked(dayNum) {
-      const DIA_DE_PROVA = 9; // Canvia aquest número pel dia que vulguis simular (ex: dia 5)
+      const DIA_DE_PROVA = 12; // Canvia aquest número pel dia que vulguis simular (ex: dia 5)
       return dayNum <= DIA_DE_PROVA; 
     }
 
@@ -588,9 +587,6 @@
               <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-extrabold">
                 ${player.correct} / ${player.totalGuesses}
               </span>
-            </td>
-            <td class="py-3 px-4 text-center text-xs font-bold text-orange-600">
-              ${player.streak > 1 ? `🔥 ${player.streak}` : '-'}
             </td>
             <td class="py-3 px-4 text-right font-black text-festive-green text-base">
               ${player.points} <span class="text-xs font-normal text-gray-400">pts</span>
