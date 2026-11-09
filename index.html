@@ -433,25 +433,20 @@
     }
 
     function isDayUnlocked(dayNum) {
-      const DIA_DE_PROVA = 27; // Canvia aquest número pel dia que vulguis simular (ex: dia 5)
-      return dayNum <= DIA_DE_PROVA; 
-    }
+      // 1. Obtenim l'hora actual exacte a Espanya (Madrid) independentment d'on sigui l'usuari
+      const nowInSpainStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" });
+      const now = new Date(nowInSpainStr);
 
-    //function isDayUnlocked(dayNum) {
-    // 1. Obtenim l'hora actual exacte a Espanya (Madrid) independentment d'on sigui l'usuari
-    //const nowInSpainStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" });
-    //const now = new Date(nowInSpainStr);
-
-    // 2. Definim el dia i l'any actuals
-    //const year = now.getFullYear();
+      // 2. Definim el dia i l'any actuals
+      const year = now.getFullYear();
     
-    // 3. Crearem la data objectiu: Desembre (mes 11) del dia corresponent a les 08:00:00 h
-    // (Recorda que a JavaScript els mesos van de 0 a 11, per tant 11 = Desembre)
-    //const unlockDate = new Date(year, 11, dayNum, 8, 0, 0);
-
-    // 4. Retorna true només si el moment actual a Espanya és igual o superior a les 8:00 d'aquell dia
-    //return now >= unlockDate;
-    //}
+      // 3. Crearem la data objectiu: Desembre (mes 11) del dia corresponent a les 08:00:00 h
+      // (Recorda que a JavaScript els mesos van de 0 a 11, per tant 11 = Desembre)
+      const unlockDate = new Date(year, 11, dayNum, 8, 0, 0);
+ 
+      // 4. Retorna true només si el moment actual a Espanya és igual o superior a les 8:00 d'aquell dia
+      return now >= unlockDate;
+    }
 
     async function fetchGoogleSheetsData() {
       if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("EL_TEU_ID_DE_SCRIPT")) {
@@ -530,16 +525,14 @@
 
       let html = '';
 
-      // 1. Obtenim la data actual (o adaptada a Espanya)
-      const nowInSpainStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" });
-      const now = new Date(nowInSpainStr);
-
-      // 2. Determinem quin és el "dia actiu" (Avui) de manera compatible amb el teu sistema de proves
-      // Si vols fer servir el DIA_DE_PROVA actual:
-      const DIA_DE_PROVA = 27; // El mateix valor que tens a isDayUnlocked
-      const activeDay = DIA_DE_PROVA; 
-      // *(Nota: Si un dia tornes a activar el calendari real per hores, 
-      // pots calcular el dia actiu comprovant quina és la darrera casella on getUnlockDateForDay(d) <= now)*
+      // 1. Busquem automàticament quin és l'últim dia que compleix la condició d'estar desbloquejat
+      let activeDay = 0; // Per defecte comença al dia 1
+      
+      adventDays.forEach(dayObj => {
+        if (isDayUnlocked(dayObj.day)) {
+          activeDay = dayObj.day; // Actualitza l'últim dia obert trobat
+        }
+      });
 
       adventDays.forEach(dayObj => {
         const isUnlocked = isDayUnlocked(dayObj.day);
