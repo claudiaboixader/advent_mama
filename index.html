@@ -433,7 +433,7 @@
     }
 
     function isDayUnlocked(dayNum) {
-      const DIA_DE_PROVA = 28; // Canvia aquest número pel dia que vulguis simular (ex: dia 5)
+      const DIA_DE_PROVA = 27; // Canvia aquest número pel dia que vulguis simular (ex: dia 5)
       return dayNum <= DIA_DE_PROVA; 
     }
 
@@ -527,44 +527,29 @@
       const grid = document.getElementById('advent-grid');
       grid.innerHTML = '';
 
-      adventDays.forEach(d => {
-        const unlocked = isDayUnlocked(d.day);
+      adventDays.forEach(dayObj => {
+        const isUnlocked = isDayUnlocked(dayObj.day);
+      
+        let cellClass = "relative rounded-2xl p-4 flex flex-col items-center justify-center transition-all shadow-md ";
+        let iconHtml = "";
+        let contentHtml = `<span class="text-3xl font-extrabold">${dayObj.day}</span>`;
 
-        if (unlocked) {
-          grid.innerHTML += `
-            <div onclick="openDayModal(${d.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-festive-gold/40">
-              <div class="absolute top-2 left-2 bg-gradient-to-r from-festive-red to-festive-darkred text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md border border-yellow-300">
-                ${d.day}
-              </div>
-              <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-festive-gold shadow-md group-hover:scale-105 transition bg-gray-900 flex items-center justify-center">
-                <img src="${d.image}" onerror="this.src='${d.fallbackImg}'" class="w-full h-full object-cover">
-              </div>
-              <div class="w-full">
-                <p class="text-xs font-bold text-gray-800 line-clamp-1">${d.title}</p>
-                <span class="inline-block mt-2 px-3 py-1 bg-festive-green/10 text-festive-green text-[11px] font-extrabold rounded-lg group-hover:bg-festive-green group-hover:text-white transition">
-                  <i class="fa-solid fa-eye mr-1"></i> Veure foto
-                </span>
-              </div>
-            </div>
-          `;
-        } else {
-          grid.innerHTML += `
-            <div onclick="openDayModal(${d.day})" class="door-card glass-card rounded-2xl p-4 flex flex-col items-center justify-between text-center cursor-pointer relative group overflow-hidden border-2 border-gray-300 bg-gray-100/80 opacity-85">
-              <div class="absolute top-2 left-2 bg-gray-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md">
-                ${d.day}
-              </div>
-              <div class="my-3 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-200 border-2 border-gray-400 flex items-center justify-center text-gray-500 text-2xl shadow-inner">
-                <i class="fa-solid fa-lock"></i>
-              </div>
-              <div class="w-full">
-                <p class="text-xs font-bold text-gray-500 line-clamp-1">Dia ${d.day} de Desembre</p>
-                <span class="inline-block mt-2 px-3 py-1 bg-gray-200 text-gray-600 text-[11px] font-extrabold rounded-lg group-hover:bg-gray-300 transition">
-                  <i class="fa-solid fa-clock mr-1"></i> Bloquejat
-                </span>
-              </div>
-            </div>
-          `;
-        }
+        if (isUnlocked) {
+          // Estil obert: El dia ja ha arribat, mostrem el número I LA SOLUCIÓ (el nom)
+          cellClass += "bg-gradient-to-br from-red-600 to-red-800 text-white cursor-pointer hover:scale-105";
+          contentHtml += `<span class="text-xs mt-2 font-bold bg-black/30 px-2 py-0.5 rounded-full text-yellow-300">${dayObj.solution}</span>`;
+      } else {
+          // Estil tancat (futur): Gris amb cadenat
+          cellClass += "bg-gray-200 text-gray-400 cursor-not-allowed opacity-60";
+          iconHtml = `<div class="absolute top-2 right-2 text-gray-400 text-xs"><i class="fa-solid fa-lock"></i></div>`;
+       }
+
+        html += `
+          <div onclick="openDayModal(${dayObj.day})" class="${cellClass}">
+            ${iconHtml}
+            ${contentHtml}
+          </div>
+        `;
       });
     }
 
