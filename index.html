@@ -239,9 +239,14 @@
     }
 
     function isDayUnlocked(dayNum) {
-      const now = new Date();
-      return now >= getUnlockDateForDay(dayNum);
+      const DIA_DE_PROVA = 5; // Canvia aquest número pel dia que vulguis simular (ex: dia 5)
+      return dayNum <= DIA_DE_PROVA; 
     }
+
+    //function isDayUnlocked(dayNum) {
+    //  const now = new Date();
+    //  return now >= getUnlockDateForDay(dayNum);
+    //}
 
     // Connector amb Google Sheets
     async function fetchGoogleSheetsData() {
@@ -453,37 +458,76 @@
     function calculateScores() {
       const scores = {};
 
+      // 1. Identificar el moment exacte del PRIMER encert de cada dia
+      const firstCorrectTimestampPerDay = {};
+
+      adventDays.forEach(dayObj => {
+        // Filterm respostes del dia que siguin correctes
+        const correctGuessesForDay = submittedGuesses.filter(g => 
+          g.day === dayObj.day && 
+          normalizeName(g.guess) === normalizeName(dayObj.solution) &&
+          g.timestamp
+        );
+
+        if (correctGuessesForDay.length > 0) {
+          // Ordenem per data/hora per trobar la primera persona
+          correctGuessesForDay.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          firstCorrectTimestampPerDay[dayObj.day] = new Date(correctGuessesForDay[0].timestamp);
+        }
+      });
+
+      // 2. Calcular puntuacions per a cada jugador
+      const playerDayAttempts = {}; // Recompte d'intents per usuari i dia
+      const alreadyScoredUserDay = new Set(); // Per evitar puntuar 2 cops el mateix encert
+
       submittedGuesses.forEach(g => {
         const normUserKey = normalizeName(g.user);
 
         if (!scores[normUserKey]) {
-          scores[normUserKey] = { name: g.user, points: 0, correct: 0, streak: 0, totalGuesses: 0 };
+          scores[normUserKey] = { name: g.user, points: 0, correct: 0, totalGuesses: 0 };
         }
-      });
 
-      adventDays.forEach(dayObj => {
-        const processedToday = new Set();
+        const userDayKey = `${normUserKey}_day_${g.day}`;
+        playerDayAttempts[userDayKey] = (playerDayAttempts[userDayKey] || 0) + 1;
+        const attemptNumber = playerDayAttempts[userDayKey];
 
-        submittedGuesses.forEach(g => {
-          if (g.day === dayObj.day) {
-            const normUserKey = normalizeName(g.user);
+        scores[normUserKey].totalGuesses++;
 
-            if (!processedToday.has(normUserKey)) {
-              processedToday.add(normUserKey);
-              if (scores[normUserKey]) {
-                scores[normUserKey].totalGuesses++;
+        const dayObj = adventDays.find(d => d.day === g.day);
+        
+        // Comprovar si la resposta és correcta
+        if (dayObj && normalizeName(g.guess) === normalizeName(dayObj.solution)) {
+          
+          if (!alreadyScoredUserDay.has(userDayKey)) {
+            alreadyScoredUserDay.add(userDayKey);
 
-                if (normalizeName(g.guess) === normalizeName(dayObj.solution)) {
-                  scores[normUserKey].correct++;
-                  scores[normUserKey].streak++;
-                  scores[normUserKey].points += 100 + (scores[normUserKey].streak * 10);
-                } else {
-                  scores[normUserKey].streak = 0;
-                }
-              }
+            // Puntuació màxima segons el número d'intent
+            let maxPointsForAttempt = 40; // 4t intent o més
+            if (attemptNumber === 1) maxPointsForAttempt = 100;
+            else if (attemptNumber === 2) maxPointsForAttempt = 80;
+            else if (attemptNumber === 3) maxPointsForAttempt = 60;
+
+            let timeFactor = 1.0; // Per defecte si és el primer o no hi ha temps
+
+            const firstTimestamp = firstCorrectTimestampPerDay[g.day];
+            if (firstTimestamp && g.timestamp) {
+              const userTimestamp = new Date(g.timestamp);
+              const endOfDay = new Date(userTimestamp.getFullYear(), userTimestamp.getMonth(), userTimestamp.getDate(), 23, 59, 59);
+
+              const totalWindowSeconds = Math.max(1, (endOfDay - firstTimestamp) / 1000);
+              const userRemainingSeconds = Math.max(0, (endOfDay - userTimestamp) / 1000);
+
+              // Proporció de temps respecte al primer encert
+              timeFactor = Math.min(1.0, userRemainingSeconds / totalWindowSeconds);
             }
+
+            // Punts finals assolits (arrodonits a nombres enters)
+            const pointsEarned = Math.round(maxPointsForAttempt * timeFactor);
+
+            scores[normUserKey].correct++;
+            scores[normUserKey].points += pointsEarned;
           }
-        });
+        }
       });
 
       return Object.values(scores).sort((a, b) => b.points - a.points || b.correct - a.correct);
