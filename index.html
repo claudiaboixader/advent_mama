@@ -576,8 +576,7 @@
       renderAdventGrid();
       startSnowfall();
       fetchGoogleSheetsData();
-
-      // actualització automàtica cada 2 minuts (120000 mil·lisegons)
+      //actualització automàtica
       setInterval(() => {
         fetchGoogleSheetsData();
       }, 30000); 
@@ -995,11 +994,14 @@
       const now = new Date();
       const currentMonth = now.getMonth(); // 11 = Desembre
       const currentDayNum = now.getDate();
+      const currentHour = now.getHours();
 
       let daysOpen = 0;
       adventDays.forEach(d => {
         // Si estem a desembre, només comptem els dies menors o iguals al dia d'avui
-        if (currentMonth === month_advent && d.day <= currentDayNum) {
+        if (currentMonth === month_advent && d.day < currentDayNum){
+          daysOpen++;
+        } else if (currentMonth === month_advent && d.day === currentDayNum && currentHour >= 8) {
           daysOpen++;
         } else if (currentMonth > month_advent) {
           daysOpen = adventDays.length; // Si ja ha passat desembre, tots oberts
