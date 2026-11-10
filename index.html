@@ -412,6 +412,7 @@
 
     let isSnowing = true;
     let countdownInterval = null;
+    month_advent = 10;
 
     // Funció per normalitzar text (treure accents, majúscules i espais sobrants)
     function normalizeName(str) {
@@ -429,7 +430,7 @@
       const year = now.getFullYear();
     
       // Retorna l'objecte Data que correspon al desembre (mes 11) del dia passat per paràmetre, a les 08:00:00h
-      return new Date(year, 11, dayNum, 8, 0, 0);
+      return new Date(year, month_advent, dayNum, 8, 0, 0);
     }
 
     function isDayUnlocked(dayNum) {
@@ -442,7 +443,7 @@
     
       // 3. Crearem la data objectiu: Desembre (mes 11) del dia corresponent a les 08:00:00 h
       // (Recorda que a JavaScript els mesos van de 0 a 11, per tant 11 = Desembre)
-      const unlockDate = new Date(year, 11, dayNum, 8, 0, 0);
+      const unlockDate = new Date(year, month_advent, dayNum, 8, 0, 0);
  
       // 4. Retorna true només si el moment actual a Espanya és igual o superior a les 8:00 d'aquell dia
       return now >= unlockDate;
@@ -622,14 +623,25 @@
 
     function openDayModal(dayNum) {
       const dayObj = adventDays.find(d => d.day === dayNum);
+
       if (!dayObj) return;
+
+      // --- Càlcul de dates (Zona horària Europa/Madrid o data actual) ---
+      const now = new Date();
+      const currentMonth = now.getMonth(); // 11 = Desembre
+      const currentDay = now.getDate();
+
+      // Definim els 3 estats
+      const esAvui = (currentMonth === month_advent && currentDay === dayNum);
+      const esPassat = (currentMonth === month_advent && currentDay > dayNum) || (currentMonth > month_advent); // O si ja ha passat desembre
+      // (Si currentMonth < 11, o currentDay < dayNum, serà futur)
 
       const modalContent = document.getElementById('modal-content');
       const unlocked = isDayUnlocked(dayNum);
 
       if (countdownInterval) clearInterval(countdownInterval);
 
-      if (unlocked) {
+      if (unlocked && esAvui) {
         modalContent.innerHTML = `
           <div class="text-center space-y-4">
             <span class="inline-block px-4 py-1 bg-festive-red text-white text-xs font-extrabold rounded-full uppercase tracking-wider">
@@ -652,13 +664,27 @@
             </a>
           </div>
         `;
+      } else if (unlocked && esPassat) {
+        modalContent.innerHTML = `
+          <div class="text-center space-y-4">
+            <span class="inline-block px-4 py-1 bg-festive-red text-white text-xs font-extrabold rounded-full uppercase tracking-wider">
+              Dia ${dayObj.day} de Desembre
+            </span>
+            
+            <h3 class="text-xl font-bold text-gray-900">${dayObj.title}</h3>
+            
+            <div class="rounded-2xl overflow-hidden border-4 border-festive-gold bg-gray-900 shadow-inner p-2">
+              <img src="${dayObj.image}" onerror="this.src='${dayObj.fallbackImg}'" class="w-full max-h-[300px] object-contain mx-auto rounded-lg">
+            </div>
+          </div>
+        `;
       } else {
         modalContent.innerHTML = `
           <div class="text-center space-y-4 py-2">
             <div class="w-16 h-16 bg-red-100 text-festive-red rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner border border-red-200">
               <i class="fa-solid fa-lock"></i>
             </div>
-            
+ 
             <h3 class="text-2xl font-bold text-gray-900">Dia ${dayObj.day} de Desembre</h3>
             <p class="text-xs text-gray-500 max-w-xs mx-auto">Aquesta finestreta s'obrirà automàticament el dia ${dayObj.day} de desembre a les 00:00h.</p>
             
