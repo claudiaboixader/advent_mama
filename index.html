@@ -107,6 +107,11 @@
         <i class="fa-solid fa-trophy text-yellow-500"></i> 2. Rànquing En Directe
       </button>
 
+      <!-- NOU BOTÓ: Pestanya 3 / Premis Especials -->
+      <button id="tab-awards-btn" onclick="switchTab('awards')" class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
+        <i class="fa-solid fa-gift text-yellow-500"></i> 3. Premis Especials
+      </button>
+
     </div>
   </div>
 
@@ -165,18 +170,33 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-gray-200 text-xs font-extrabold text-gray-400 uppercase tracking-wider">
-                <th class="py-3 px-4">Posició</th>
+                <tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider text-left bg-gray-50">
+                <th class="py-3 px-4 w-12">#</th>
                 <th class="py-3 px-4">Participant</th>
                 <th class="py-3 px-4 text-center">Encerts</th>
-                <th class="py-3 px-4 text-right">Punts Totals</th>
-              </tr>
+                <th class="py-3 px-4">Historial resultats</th>
+                <th class="py-3 px-4 text-right">Punts</th>
+                </tr>
             </thead>
             <tbody id="leaderboard-tbody" class="divide-y divide-gray-100 text-sm font-medium">
               <!-- Renderitzat per JS -->
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+    
+    <!-- SECCIÓ 3 -->
+    <section id="section-awards" class="space-y-6 hidden">
+      <div class="glass-card rounded-3xl p-6 festive-shadow bg-gradient-to-b from-white/90 to-amber-50/40">
+          <h2 class="text-center font-holiday text-3xl font-bold text-festive-darkred mb-6">
+          🏆 Premis Especials de l'Advent 🏆
+          </h2>
+        
+          <!-- Contenidor on s'injectaran les targetes automàticament des de JavaScript -->
+          <div id="special-awards-container" class="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2 pb-2">
+          <!-- Renderitzat per JS -->
+          </div>
       </div>
     </section>
 
@@ -206,7 +226,7 @@
     
     // Canvia 'entry.123456789' pel teu codi real de Google Forms:
     const ENTRY_DAY_ID = "entry.236020932";
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwdOZrWvl9s8qzGGck4AJtbeWW36AjkXk9V5VlCMO5cPPBiv7DcfNnq96ow8UPidbXq/exec"; 
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8Ayxpthb9dORG6sszYPZVEyUVox7NELAuSYfiNB9wFcozdrUiwg0AV4Y-L_gZpAK5/exec"
 
     let submittedGuesses = [];
 
@@ -452,7 +472,6 @@
     async function fetchGoogleSheetsData() {
       if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("EL_TEU_ID_DE_SCRIPT")) {
         console.warn("Sense APPS_SCRIPT_URL configurat.");
-        renderLeaderboard();
         return;
       }
 
@@ -495,7 +514,7 @@
     };
 
     function switchTab(tabName) {
-      ['calendar', 'ranking'].forEach(t => {
+      ['calendar', 'ranking', 'awards'].forEach(t => {
         const sec = document.getElementById(`section-${t}`);
         const btn = document.getElementById(`tab-${t}-btn`);
         if (sec) sec.classList.add('hidden');
@@ -514,8 +533,9 @@
         activeBtn.classList.add('bg-festive-green', 'text-white', 'shadow-sm');
       }
 
-      if (tabName === 'ranking') {
+      if (tabName === 'ranking' || tabName === 'awards') {
         fetchGoogleSheetsData();
+        renderSpecialAwards(); 
       }
     }
     
@@ -628,13 +648,12 @@
 
       // --- Càlcul de dates (Zona horària Europa/Madrid o data actual) ---
       const now = new Date();
-      const currentMonth = now.getMonth(); // 11 = Desembre
+      const currentMonth = now.getMonth();
       const currentDay = now.getDate();
 
       // Definim els 3 estats
       const esAvui = (currentMonth === month_advent && currentDay === dayNum);
       const esPassat = (currentMonth === month_advent && currentDay > dayNum) || (currentMonth > month_advent); // O si ja ha passat desembre
-      // (Si currentMonth < 11, o currentDay < dayNum, serà futur)
 
       const modalContent = document.getElementById('modal-content');
       const unlocked = isDayUnlocked(dayNum);
@@ -741,7 +760,6 @@
       const scores = {};
 
       try {
-        // 1. Identificar el moment exacte del PRIMER encert de cada dia
         const firstCorrectTimestampPerDay = {};
 
         adventDays.forEach(dayObj => {
@@ -757,7 +775,6 @@
           }
         });
 
-        // 2. Calcular puntuacions per a cada jugador
         const playerDayAttempts = {}; 
         const alreadyScoredUserDay = new Set(); 
 
@@ -765,24 +782,26 @@
           const dayObj = adventDays.find(d => d.day === g.day);
           if (!dayObj) return;
 
-          // SEGURETAT ESTRICTA: El dia de la resposta ha de coincidir 
-          // exactament amb el dia del calendari en què es va enviar el formulari.
           if (g.timestamp) {
             const respDate = new Date(g.timestamp);
-            const respDay = respDate.getDate(); // Dia del mes en què es va enviar (1, 2, 3...)
+            const respDay = respDate.getDate(); 
 
-            // Si el dia del formulari (g.day) NO coincideix amb el dia real de tramesa (respDay),
-            // es descarta immediatament i per a sempre.
             if (respDay !== g.day) {
-              return; // Ignorat! No s'accepta cap resposta fora del seu dia exacte.
+              return; 
             }
           } else {
-            return; // Si no hi ha timestamp, per seguretat el descartem
+            return; 
           }
 
           const normUserKey = normalizeName(g.user);
           if (!scores[normUserKey]) {
-            scores[normUserKey] = { name: g.user, points: 0, correct: 0, totalGuesses: 0 };
+            scores[normUserKey] = { 
+              name: g.user, 
+              points: 0, 
+              correct: 0, 
+              totalGuesses: 0,
+              daysData: {} // <-- Per agrupar 1 sola boleta per dia
+            };
           }
           
           const userDayKey = `${normUserKey}_day_${g.day}`;
@@ -791,7 +810,24 @@
 
           scores[normUserKey].totalGuesses++;
           
-          if (normalizeName(g.guess) === normalizeName(dayObj.solution)) {
+          const isCorrect = normalizeName(g.guess) === normalizeName(dayObj.solution);
+
+          // Inicialitzem o actualitzem el resum d'aquest dia per al jugador
+          if (!scores[normUserKey].daysData[g.day]) {
+            scores[normUserKey].daysData[g.day] = {
+              day: g.day,
+              attemptsCount: 0,
+              isCorrect: false
+            };
+          }
+
+          // Actualitzem els intents d'avui
+          scores[normUserKey].daysData[g.day].attemptsCount = attemptNumber;
+          if (isCorrect) {
+            scores[normUserKey].daysData[g.day].isCorrect = true;
+          }
+
+          if (isCorrect) {
             if (!alreadyScoredUserDay.has(userDayKey)) {
               alreadyScoredUserDay.add(userDayKey);
 
@@ -817,6 +853,11 @@
               scores[normUserKey].points += pointsEarned;
             }
           }
+        });
+
+        // Convertim el diccionari de dies en un array ordenat per dia (Dia 1, Dia 2...)
+        Object.values(scores).forEach(player => {
+          player.guessesHistory = Object.values(player.daysData).sort((a, b) => a.day - b.day);
         });
 
       } catch (err) {
@@ -860,31 +901,233 @@
         `;
       }
 
-      const tbody = document.getElementById('leaderboard-tbody');
-      tbody.innerHTML = '';
+      const leaderboardContainer = document.getElementById('leaderboard-tbody'); 
+      if (!leaderboardContainer) return;
 
-      sorted.forEach((player, index) => {
-        const rank = index + 1;
-        let badge = `<span class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 inline-flex items-center justify-center text-xs font-bold">${rank}</span>`;
-        if (rank === 1) badge = `🥇`;
-        if (rank === 2) badge = `🥈`;
-        if (rank === 3) badge = `🥉`;
+      const rankedPlayers = calculateScores();
 
-        tbody.innerHTML += `
-          <tr class="hover:bg-amber-50/50 transition">
-            <td class="py-3 px-4 font-bold text-center">${badge}</td>
-            <td class="py-3 px-4 font-bold text-gray-800">${player.name}</td>
-            <td class="py-3 px-4 text-center">
-              <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-extrabold">
-                ${player.correct} / ${player.totalGuesses}
-              </span>
-            </td>
-            <td class="py-3 px-4 text-right font-black text-festive-green text-base">
-              ${player.points} <span class="text-xs font-normal text-gray-400">pts</span>
-            </td>
-          </tr>
-        `;
+      let htmlTabla = "";
+
+      if (rankedPlayers.length === 0) {
+        leaderboardContainer.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">Encara no hi ha participacions registrades.</td></tr>`;
+        return;
+      }
+
+      // Càlcul dinàmic: quants dies porten oberts a dia d'avui (basat en el mes de desembre)
+      const now = new Date();
+      const currentMonth = now.getMonth(); // 11 = Desembre
+      const currentDayNum = now.getDate();
+
+      let daysOpen = 0;
+      adventDays.forEach(d => {
+        // Si estem a desembre, només comptem els dies menors o iguals al dia d'avui
+        if (currentMonth === month_advent && d.day <= currentDayNum) {
+          daysOpen++;
+        } else if (currentMonth > month_advent) {
+          daysOpen = adventDays.length; // Si ja ha passat desembre, tots oberts
+        }
       });
+
+      rankedPlayers.forEach((player, index) => {
+        const position = index + 1; // 1, 2, 3...
+
+        // Definim el format de la posició (medalletes per als 3 primers, número per a la resta)
+        let textPosicio = `#${position}`;
+        if (position === 1) {
+            textPosicio = `🥇`;
+        } else if (position === 2) {
+            textPosicio = `🥈`;
+        } else if (position === 3) {
+            textPosicio = `🥉`;
+        }
+
+        // Encerts / Dies totals que porten oberts fins avui
+        const textEncerts = `${player.correct} / ${daysOpen}`;
+
+        // Generem el HTML de la boleta única per dia
+        let htmlBoletes = `<div class="flex items-center gap-1.5 flex-wrap">`;
+        
+        player.guessesHistory.forEach(dayItem => {
+          const colorClasse = dayItem.isCorrect 
+            ? "bg-emerald-500 text-white border-emerald-600 shadow-sm" 
+            : "bg-red-500 text-white border-red-600 shadow-sm";
+
+          const tooltipText = dayItem.isCorrect
+            ? `Dia ${dayItem.day} - Encertat (${dayItem.attemptsCount} intents)`
+            : `Dia ${dayItem.day} - ${dayItem.attemptsCount} intents (Sense encertar)`;
+
+          htmlBoletes += `
+            <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border ${colorClasse}" title="${tooltipText}">
+              ${dayItem.attemptsCount}
+            </div>
+          `;
+        });
+        htmlBoletes += `</div>`;
+
+        // Estructura de la fila amb l'ID correcte al tbody del teu HTML
+        htmlTabla += `
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition items-center">
+            <td class="py-3 px-4 font-black text-gray-center text-base">${textPosicio}</td>
+            <td class="py-3 px-4 font-bold text-gray-900">${player.name}</td>
+            <td class="py-3 px-4 text-center font-semibold text-gray-600">${textEncerts}</td>
+            <td class="py-3 px-4">${htmlBoletes}</td>
+            <td class="py-3 px-4 font-extrabold text-indigo-600 text-right">${player.points} pts</td>
+            </tr>
+        `;
+        });
+        
+      leaderboardContainer.innerHTML = htmlTabla;
+    }
+
+    function renderSpecialAwards() {
+      const container = document.getElementById('special-awards-container');
+      if (!container) return;
+
+      const rankedPlayers = calculateScores();
+      if (rankedPlayers.length === 0 || typeof adventDays === 'undefined') {
+        container.innerHTML = `<p class="col-span-3 text-center text-gray-400 text-sm italic py-4">Encara no hi ha dades suficients per calcular els premis.</p>`;
+        return;
+      }
+
+      // 1. Persona amb més encerts
+      let maxCorrect = -1;
+      let topCorrectPlayers = [];
+      rankedPlayers.forEach(p => {
+        if (p.correct > maxCorrect) {
+          maxCorrect = p.correct;
+          topCorrectPlayers = [p.name];
+        } else if (p.correct === maxCorrect) {
+          topCorrectPlayers.push(p.name);
+        }
+      });
+      const mostCorrectText = topCorrectPlayers.length > 0 ? topCorrectPlayers.join(', ') : 'Ningú';
+
+      // 2. Dies oberts fins a data d'avui
+      const now = new Date();
+      const currentMonth = now.getMonth(); // 11 = Desembre
+      const currentDayNum = now.getDate();
+
+      const openedDays = adventDays.filter(d => {
+        if (currentMonth === month_advent) {
+          return d.day <= currentDayNum;
+        } else if (currentMonth > month_advent) {
+          return true;
+        }
+        return currentDayNum > 0 ? d.day <= currentDayNum : true;
+      });
+
+      const activeDays = openedDays.length > 0 ? openedDays : [adventDays[0]].filter(Boolean);
+
+      // 3. Analitzar estadístiques utilitzant EXACTAMENT la teva comprovació (g.day === dayObj.day)
+      let dayStats = activeDays.map(dayObj => {
+        const correctUsers = new Set();
+        let totalAttempts = 0;
+
+        submittedGuesses.forEach(g => {
+          // Mateixa lògica que a calculateScores() que sabem que funciona al 100%
+          if (g.day === dayObj.day) {
+            // 2. FILTRE ANTI-TRAMPES PER DATA (TIMESTAMP):
+            // Si la resposta té timestamp, ens assegurem que el dia en què es va enviar 
+            // correspongui realment a la data d'aquell dia d'Advent (o almenys que no sigui un dia futur/passat colat a la força).
+            // Si g.timestamp existeix, podem comprovar el dia del mes del timestamp:
+            if (g.timestamp) {
+              const respDate = new Date(g.timestamp);
+              const respDay = respDate.getDate(); 
+
+              if (respDay !== g.day) {
+                return; 
+              }
+            } else {
+              return; 
+            }
+            totalAttempts++;
+            if (normalizeName(g.guess) === normalizeName(dayObj.solution)) {
+              correctUsers.add(normalizeName(g.user));
+            }
+          }
+        });
+
+        return {
+          day: dayObj.day,
+          image: dayObj.image || dayObj.photo || dayObj.img || '', 
+          correctCount: correctUsers.size,
+          attempts: totalAttempts
+        };
+      });
+
+      // FILTRE CLAU: Quedar-nos NOMÈS amb els dies que tenen respostes reals (evitem dies amb 0 intents)
+      const playedDays = dayStats.filter(d => d.attempts > 0);
+
+      // 4. Casella Més Fàcil (dels jugats, el que té més encerts)
+      const sortedByEasiest = [...playedDays].sort((a, b) => b.correctCount - a.correctCount);
+      const easiestDay = sortedByEasiest.length > 0 ? sortedByEasiest[0] : null;
+
+      // 5. Casella Més Difícil (dels jugats, el que té menys encerts)
+      const sortedByHardest = [...playedDays].sort((a, b) => a.correctCount - b.correctCount);
+      const hardestDay = sortedByHardest.length > 0 ? sortedByHardest[0] : null;
+
+      // Si només tenim 1 dia jugat (per exemple, només el dia 10), 
+      // no podem comparar amb cap altre dia, per tant la més difícil queda a '-' fins que hi hagi un segon dia amb activitat.
+      const finalHardestDay = (playedDays.length > 1 && hardestDay && easiestDay && hardestDay.day !== easiestDay.day) ? hardestDay : null;
+
+      // 6. Generem el HTML de les targetes
+      let html = `
+        <!-- Targeta 1: Màxims Encerts -->
+        <div class="bg-white/80 rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="flex items-center gap-2 text-amber-600 mb-3">
+              <span class="text-2xl">👑</span>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">Màxims Encerts</h4>
+            </div>
+            <p class="text-2xl font-black text-gray-900 truncate" title="${mostCorrectText}">${mostCorrectText}</p>
+          </div>
+          <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <span class="font-medium">Rècord actual</span>
+            <span class="font-extrabold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">${maxCorrect} encerts</span>
+          </div>
+        </div>
+
+        <!-- Targeta 2: Casella Més Fàcil (amb foto gran) -->
+        <div class="bg-white/80 rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="flex items-center gap-2 text-emerald-600 mb-3">
+              <span class="text-2xl">🌟</span>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">Casella Més Fàcil</h4>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-2xl font-black text-gray-900">Dia ${easiestDay ? easiestDay.day : '-'}</p>
+                <span class="text-xs text-gray-500 font-medium">${easiestDay ? 'La més fàcil' : 'Calen més dies jugats'}</span>
+              </div>
+              ${easiestDay && easiestDay.image ? `
+                <img src="${easiestDay.image}" alt="Dia ${easiestDay.day}" class="w-20 h-20 object-cover rounded-2xl shadow-md border-2 border-emerald-100 flex-shrink-0" />
+              ` : ''}
+            </div>
+          </div>
+          <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <span class="font-medium">Encertada per</span>
+            <span class="font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">${easiestDay ? easiestDay.correctCount : 0} persones</span>
+          </div>
+        </div>
+
+        <!-- Targeta 3: Casella Més Difícil -->
+        <div class="bg-white/80 rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="flex items-center gap-2 text-rose-600 mb-3">
+              <span class="text-2xl">🔥</span>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">Casella Més Difícil</h4>
+            </div>
+            <p class="text-2xl font-black text-gray-900">${hardestDay ? `Dia ${hardestDay.day}` : '-'}</p>
+            <span class="text-xs text-gray-500 font-medium">${hardestDay ? 'La més difícil' : 'Calen més dies jugats'}</span>
+          </div>
+          <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <span class="font-medium">Encertada per</span>
+            <span class="font-extrabold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md">${hardestDay ? hardestDay.correctCount : 0} persones</span>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = html;
     }
 
     function startSnowfall() {
