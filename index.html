@@ -156,12 +156,46 @@
         </div>
       </div>
 
-      <div class="glass-card rounded-3xl p-6 festive-shadow overflow-hidden">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+      <div class="glass-card rounded-3xl p-6 festive-shadow overflow-visible">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h3 class="text-xl font-bold text-gray-900">Classificació General</h3>
+            <div class="flex items-center gap-2">
+              <h3 class="text-xl font-bold text-gray-900">Classificació General</h3>
+              
+              <!-- Icona d'informació amb Tooltip cap avall -->
+              <div class="relative group cursor-pointer inline-flex items-center">
+                <span class="flex items-center justify-center w-5 h-5 text-xs font-bold text-emerald-700 bg-emerald-100 rounded-full border border-emerald-300 hover:bg-emerald-200 transition shadow-xs">
+                  i
+                </span>
+                
+                <!-- Targeta emergent (Tooltip) - Ara s'obre cap avall (top-full mt-2) -->
+                <div class="absolute left-0 top-full mt-2 hidden group-hover:block w-72 sm:w-80 p-4 bg-gray-900 text-white text-xs rounded-2xl shadow-2xl z-50 pointer-events-none">
+                  <!-- Fletxa superior del tooltip -->
+                  <div class="absolute bottom-full left-4 border-4 border-transparent border-b-gray-900"></div>
+
+                  <p class="font-bold text-emerald-400 mb-2 text-sm">Com funciona la puntuació?</p>
+                  
+                  <div class="space-y-2 text-gray-300">
+                    <p>⏰ <strong>Horari:</strong> Vàlid només entre les <strong>08:00h i les 24:00h</strong> del mateix dia.</p>
+                    
+                    <div>
+                      <p class="font-semibold text-white mb-0.5">🎯 Punts base per intents:</p>
+                      <ul class="list-disc list-inside pl-1 space-y-0.5 text-gray-300">
+                        <li>1r intent: <strong>100 punts</strong></li>
+                        <li>2n intent: <strong>80 punts</strong></li>
+                        <li>3r intent: <strong>60 punts</strong></li>
+                        <li>4t intent o més: <strong>40 punts</strong></li>
+                      </ul>
+                    </div>
+                    
+                    <p>⚡ <strong>Factor de temps:</strong> La puntuació anirà reduint-se a partir de la <strong>primera persona</strong> que respongui correctament.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
             <p class="text-xs text-gray-500">Actualitzat automàticament</p>
           </div>
+
           <button onclick="fetchGoogleSheetsData()" class="px-4 py-2 bg-festive-green hover:bg-festive-lightgreen text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
             <i class="fa-solid fa-rotate"></i> Actualitzar Dades
           </button>
@@ -846,10 +880,14 @@
               if (firstTimestamp && g.timestamp) {
                 const userTimestamp = new Date(g.timestamp);
                 const endOfDay = new Date(userTimestamp.getFullYear(), userTimestamp.getMonth(), userTimestamp.getDate(), 23, 59, 59);
-
-                const totalWindowSeconds = Math.max(1, (endOfDay - firstTimestamp) / 1000);
-                const userRemainingSeconds = Math.max(0, (endOfDay - userTimestamp) / 1000);
-                timeFactor = Math.min(1.0, userRemainingSeconds / totalWindowSeconds);
+                // answers from 00 to 8 give 0 points
+                if (userTimestamp.getHours() < 8) {
+                  timeFactor = 0;
+                } else {
+                  const totalWindowSeconds = Math.max(1, (endOfDay - firstTimestamp) / 1000);
+                  const userRemainingSeconds = Math.max(0, (endOfDay - userTimestamp) / 1000);
+                  timeFactor = Math.min(1.0, userRemainingSeconds / totalWindowSeconds);
+                }
               }
 
               const pointsEarned = Math.round(maxPointsForAttempt * timeFactor);
