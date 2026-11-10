@@ -944,25 +944,59 @@
         // Encerts / Dies totals que porten oberts fins avui
         const textEncerts = `${player.correct} / ${daysOpen}`;
 
-        // Generem el HTML de la boleta única per dia
-        let htmlBoletes = `<div class="flex items-center gap-1.5 flex-wrap">`;
-        
-        player.guessesHistory.forEach(dayItem => {
-          const colorClasse = dayItem.isCorrect 
-            ? "bg-emerald-500 text-white border-emerald-600 shadow-sm" 
-            : "bg-red-500 text-white border-red-600 shadow-sm";
+        // Generem un ID únic per al contenidor per poder fer el scroll automàtic cap al final
+        const containerId = `scroll-container-${Math.random().toString(36).substr(2, 9)}`;
 
-          const tooltipText = dayItem.isCorrect
-            ? `Dia ${dayItem.day} - Encertat (${dayItem.attemptsCount} intents)`
-            : `Dia ${dayItem.day} - ${dayItem.attemptsCount} intents (Sense encertar)`;
+        // Generem el HTML de les boletes (filtrant només fins al dia actual)
+        let htmlBoletes = `
+          <div id="${containerId}" class="max-w-[200px] overflow-x-auto whitespace-nowrap py-1.5 px-1 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div class="inline-flex items-center gap-1">
+        `;
+        
+        // FILTRE CLAU: Agafem només els dies que ja han obert (menors o iguals a daysOpen)
+        const visibleDays = adventDays.filter(dayObj => Number(dayObj.day) <= daysOpen);
+
+        visibleDays.forEach(dayObj => {
+          const dayItem = player.guessesHistory.find(d => Number(d.day) === Number(dayObj.day));
+
+          let colorClasse = "";
+          let tooltipText = "";
+          let totalAttempts = dayItem ? dayItem.attemptsCount : 0;
+
+          if (!dayItem || totalAttempts === 0) {
+            colorClasse = "bg-gray-100 text-gray-400 border-gray-200";
+            tooltipText = `Dia ${dayObj.day}: Sense intents`;
+          } else if (dayItem.isCorrect) {
+            colorClasse = "bg-emerald-500 text-white border-emerald-600 shadow-sm";
+            tooltipText = `Dia ${dayObj.day}: Encertat (${totalAttempts} ${totalAttempts === 1 ? 'intent' : 'intents'})`;
+          } else {
+            colorClasse = "bg-rose-500 text-white border-rose-600 shadow-sm";
+            tooltipText = `Dia ${dayObj.day}: Fallat (${totalAttempts} ${totalAttempts === 1 ? 'intent' : 'intents'})`;
+          }
 
           htmlBoletes += `
-            <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border ${colorClasse}" title="${tooltipText}">
-              ${dayItem.attemptsCount}
+            <div class="relative inline-flex items-center justify-center flex-shrink-0" title="${tooltipText}">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border ${colorClasse}">
+                ${dayObj.day}
+              </div>
+              ${totalAttempts > 0 ? `
+                <span class="absolute -top-1 -right-1 bg-gray-900 text-white text-[7px] w-3 h-3 rounded-full flex items-center justify-center font-bold shadow-sm">
+                  ${totalAttempts}
+                </span>
+              ` : ''}
             </div>
           `;
         });
-        htmlBoletes += `</div>`;
+
+        htmlBoletes += `</div></div>`;
+
+        // TRUC DE JAVASCRIPT: Desplaçar automàticament cap al final un cop inserit al DOM
+        setTimeout(() => {
+          const el = document.getElementById(containerId);
+          if (el) {
+            el.scrollLeft = el.scrollWidth;
+          }
+        }, 10);
 
         // Estructura de la fila amb l'ID correcte al tbody del teu HTML
         htmlTabla += `
