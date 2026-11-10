@@ -66,29 +66,32 @@
   <canvas id="snow-canvas"></canvas>
 
   <!-- Header i Banner Festiu -->
-  <header class="bg-gradient-to-r from-festive-darkred via-festive-red to-festive-darkred text-white shadow-xl relative overflow-hidden border-b-4 border-festive-gold">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 relative z-10">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-festive-gold/20 rounded-full border-2 border-festive-gold flex items-center justify-center text-festive-gold text-3xl sm:text-4xl shadow-inner">
-            <i class="fa-solid fa-gift animate-bounce"></i>
-          </div>
-          <div>
-            <span class="inline-block px-3 py-1 bg-festive-gold/30 border border-festive-gold text-festive-cream rounded-full text-xs font-bold uppercase tracking-wider mb-1">
-              <i class="fa-solid fa-snowflake mr-1"></i> Calendari d'Advent 🎄
-            </span>
-            <h1 class="text-3xl sm:text-5xl font-holiday font-bold tracking-wide text-white drop-shadow-md">
-              Qui és de Petit? 👶
-            </h1>
-            <p class="text-xs sm:text-sm text-red-100 max-w-md mt-1">
-              Descobreix la foto de cada dia i respon al formulari per sumar punts al rànquing!
-            </p>
-          </div>
-        </div>
+<header class="relative bg-festive-darkred text-white shadow-xl overflow-hidden border-b-4 border-festive-gold">
+    
+    <!-- FONS AMB LA FOTO I CAPES DE COLORS DE SOBRE (Gradient) -->
+    <div class="absolute inset-0 z-0">
+        <img src="imatges/foto_general.jpeg" alt="Fons Nadalenc" class="w-full h-full object-cover opacity-75" />
+        <div class="absolute inset-0 bg-gradient-to-r from-festive-darkred/70 via-festive-red/40 to-festive-darkred/70"></div>
+    </div>
 
+    <!-- CONTINGUT DE LA CAPÇALERA -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+        <div>
+          <span class="inline-block px-3 py-1 bg-festive-gold/30 border border-festive-gold text-festive-cream rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+            <i class="fa-solid fa-snowflake mr-1"></i> Calendari d'Advent 🎄
+          </span>
+          <h1 class="text-3xl sm:text-5xl font-holiday font-bold tracking-wide text-white drop-shadow-md">
+            El personatge del dia 👶
+          </h1>
+          <p class="text-xs sm:text-sm text-red-100 max-w-xl mt-2">
+            Descobreix la foto de cada dia i respon al formulari per sumar punts al rànquing. Sigues el més ràpid/a per a guanyar encara més punts.
+          </p>
+        </div>
         <div class="flex items-center gap-3">
-          <button id="toggle-snow-btn" onclick="toggleSnow()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 backdrop-blur-sm">
-            <i class="fa-solid fa-snowflake text-blue-200"></i> <span id="snow-btn-text">Aturar Neu</span>
+          <button id="audio-toggle-btn" onclick="toggleAudio()" class="absolute bottom-2 right-48 z-20 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white border-2 border-slate-700 rounded-none flex flex-col items-center justify-center gap-1.5 p-2 transition shadow-xl">
+            <i id="audio-icon" class="fa-solid fa-volume-xmark text-red-400 text-xl"></i> 
+            <span id="audio-btn-text" class="text-[10px] text-center leading-tight font-semibold">Música Off</span>
           </button>
         </div>
       </div>
@@ -104,7 +107,7 @@
       </button>
 
       <button id="tab-ranking-btn" onclick="switchTab('ranking')" class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 text-gray-600 hover:text-festive-green hover:bg-gray-100">
-        <i class="fa-solid fa-trophy text-yellow-500"></i> 2. Rànquing En Directe
+        <i class="fa-solid fa-trophy text-yellow-500"></i> 2. Rànquing en directe
       </button>
 
       <!-- NOU BOTÓ: Pestanya 3 / Premis Especials -->
@@ -124,9 +127,9 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4 mb-6">
           <div>
             <h2 class="text-2xl font-bold text-festive-green flex items-center gap-2">
-              <i class="fa-solid fa-door-closed text-festive-gold"></i> Les 24 Finestres de Desembre
+              <i class="fa-solid fa-door-closed text-festive-gold"></i> Les 31 Finestres de Desembre
             </h2>
-            <p class="text-xs text-gray-500">Fes clic a qualsevol casella per veure la foto de petit i enviar la teva resposta.</p>
+            <p class="text-xs text-gray-500">Fes clic a la casella del dia d'avui per veure la foto de petit i enviar la teva resposta.</p>
           </div>
           
           <div class="flex items-center gap-3 text-xs font-bold">
@@ -252,6 +255,14 @@
     </div>
   </div>
 
+  <audio id="bg-music" loop preload="auto">
+    <source src="audio/musica_fons.m4a" type="audio/mpeg">
+  </audio>
+
+  <!-- Efecte de so curt per quan s'obre una casella -->
+  <audio id="click-sound" preload="auto">
+    <source src="audio/bell.mp3" type="audio/mpeg">
+  </audio>
 
   <!-- LÒGICA JAVASCRIPT -->
   <script>
@@ -701,6 +712,7 @@
     }
 
     function openDayModal(dayNum) {
+      playClickSound();
       const dayObj = adventDays.find(d => d.day === dayNum);
 
       if (!dayObj) return;
@@ -764,7 +776,7 @@
             </div>
  
             <h3 class="text-2xl font-bold text-gray-900">Dia ${dayObj.day} de Desembre</h3>
-            <p class="text-xs text-gray-500 max-w-xs mx-auto">Aquesta finestreta s'obrirà automàticament el dia ${dayObj.day} de desembre a les 00:00h.</p>
+            <p class="text-xs text-gray-500 max-w-xs mx-auto">Aquesta finestreta s'obrirà automàticament el dia ${dayObj.day} de desembre a les 08:00h.</p>
             
             <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 my-2">
               <p class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">Falten per al desbloqueig:</p>
@@ -1310,9 +1322,40 @@
       animateSnow();
     }
 
-    function toggleSnow() {
-      isSnowing = !isSnowing;
-      document.getElementById('snow-btn-text').textContent = isSnowing ? 'Aturar Neu' : 'Activar Neu';
+    let isMusicPlaying = false;
+
+    function toggleAudio() {
+      const music = document.getElementById('bg-music');
+      const icon = document.getElementById('audio-icon');
+      const text = document.getElementById('audio-btn-text');
+
+      if (!isMusicPlaying) {
+        music.volume = 0.3; // Volum al 30% perquè sigui suau de fons
+        music.play().then(() => {
+        isMusicPlaying = true;
+        icon.className = "fa-solid fa-volume-high text-green-400 text-xl";
+        text.innerText = "Música On";
+        }).catch(error => {
+        console.log("El navegador ha blocat l'àudio automàtic:", error);
+        });
+      } else {
+        music.pause();
+        isMusicPlaying = false;
+        icon.className = "fa-solid fa-volume-xmark text-red-400 text-xl";
+        text.innerText = "Música Off";
+      }
+    }
+
+    // Funció per reproduir el so curt quan l'usuari clica una casella
+    function playClickSound() {
+      const sound = document.getElementById('click-sound');
+      if (sound) {
+        sound.currentTime = 0; // Reinicia el so per si es clica ràpid
+        sound.volume = 0.5;
+        sound.play().catch(e => {
+        // Ignora errors si l'usuari no ha interactuat encara amb la pàgina
+        });
+      }
     }
   </script>
 </body>
