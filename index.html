@@ -185,9 +185,9 @@
                       <p class="font-semibold text-white mb-0.5">🎯 Punts base per intents:</p>
                       <ul class="list-disc list-inside pl-1 space-y-0.5 text-gray-300">
                         <li>1r intent: <strong>100 punts</strong></li>
-                        <li>2n intent: <strong>80 punts</strong></li>
-                        <li>3r intent: <strong>60 punts</strong></li>
-                        <li>4t intent o més: <strong>40 punts</strong></li>
+                        <li>2n intent: <strong>90 punts</strong></li>
+                        <li>3r intent: <strong>75 punts</strong></li>
+                        <li>4t intent o més: <strong>60 punts</strong></li>
                       </ul>
                     </div>
                     
@@ -901,10 +901,10 @@
             if (!alreadyScoredUserDay.has(userDayKey)) {
               alreadyScoredUserDay.add(userDayKey);
 
-              let maxPointsForAttempt = 40; 
+              let maxPointsForAttempt = 60; 
               if (attemptNumber === 1) maxPointsForAttempt = 100;
-              else if (attemptNumber === 2) maxPointsForAttempt = 80;
-              else if (attemptNumber === 3) maxPointsForAttempt = 60;
+              else if (attemptNumber === 2) maxPointsForAttempt = 90;
+              else if (attemptNumber === 3) maxPointsForAttempt = 75;
 
               let timeFactor = 1.0; 
               const firstTimestamp = firstCorrectTimestampPerDay[g.day];
