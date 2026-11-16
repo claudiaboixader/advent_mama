@@ -630,6 +630,7 @@
         // Identifiquem els 3 estats:
         // - Cas 1: És exactament el dia de prova/avui actiu
         const isToday = (dayObj.day === activeDay);
+        const currentHour = new Date().getHours();
         
         // - Cas 2: Està obert però no és el dia d'avui (dies passats)
         // - Cas 3: Està tancat (dies futurs)
@@ -638,7 +639,7 @@
         let iconHtml = "";
         let contentHtml = `<span class="text-3xl font-extrabold">${dayObj.day}</span>`;
 
-        if (isToday) {
+        if (isToday && currentHour >= 8) {
           // ==========================================
           // CAS 1: DIA ACTUAL (Avui - Cridaner i llest per jugar)
           // ==========================================
@@ -659,7 +660,7 @@
             </div>
           `;
 
-        } else if (isUnlocked) {
+        } else if (isUnlocked || (isToday && currentHour < 8)) {
           // ==========================================
           // CAS 2: DIES PASSATS (Oberts, mostren la solució / el nom)
           // ==========================================
@@ -720,10 +721,11 @@
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentDay = now.getDate();
+      const currentHour = now.getHours();
 
       // Definim els 3 estats
-      const esAvui = (currentMonth === month_advent && currentDay === dayNum);
-      const esPassat = (currentMonth === month_advent && currentDay > dayNum) || (currentMonth > month_advent); // O si ja ha passat desembre
+      const esAvui = (currentMonth === month_advent && currentDay === dayNum && currentHour >= 8);
+      const esPassat = (currentMonth === month_advent && currentDay > dayNum) || (currentMonth > month_advent) || (currentMonth === month_advent && currentDay === dayNum && currentHour < 8); // O si ja ha passat desembre
 
       const modalContent = document.getElementById('modal-content');
       const unlocked = isDayUnlocked(dayNum);
