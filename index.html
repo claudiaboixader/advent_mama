@@ -58,9 +58,185 @@
       transform: translateY(-6px) scale(1.02);
       box-shadow: 0 15px 30px -5px rgba(30, 77, 43, 0.25);
     }
+
+    
+    .rules-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      padding: 15px;
+    }
+
+    .rules-message {
+      background: #fff;
+      color: #333;
+      padding: 30px;
+      border-radius: 18px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      text-align: left;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .rules-message h2 {
+      color: #168447;
+      text-align: center;
+      margin-top: 0;
+      line-height: 1.4;
+    }
+
+    .rules-message h3 {
+      color: #168447;
+      margin-top: 25px;
+      margin-bottom: 12px;
+    }
+
+    .rules-message h4 {
+      margin-bottom: 5px;
+      color: #168447;
+    }
+
+    .rules-message p {
+      line-height: 1.6;
+    }
+
+    .rules-intro {
+      text-align: center;
+      font-weight: bold;
+      color: #b8860b;
+      font-size: 1.1em;
+    }
+
+    .points-list {
+      list-style: none;
+      padding: 15px;
+      background: #f1f8f3;
+      border-radius: 12px;
+      line-height: 2;
+    }
+
+    .rules-section {
+      background: #f7f7f7;
+      padding: 10px 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+    }
+
+    .rules-section p {
+      margin-bottom: 5px;
+    }
+
+    .rules-message button {
+      display: block;
+      width: 100%;
+      background: #168447;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .rules-message button:hover {
+      background: #116b38;
+    }
+
+    @media (max-width: 600px) {
+      .rules-message {
+        padding: 20px;
+      }
+
+      .rules-message h2 {
+        font-size: 21px;
+      }
+    }
+
   </style>
 </head>
 <body class="bg-festive-snow font-sans text-gray-800 min-h-screen flex flex-col relative pb-12 overflow-x-hidden">
+
+  <div id="rulesOverlay" class="rules-overlay">
+    <div class="rules-message">
+
+      <h2>🎄 Benvinguts al calendari d'Advent de l'EAP Baix Berguedà 2026!</h2>
+
+      <p class="rules-intro">
+        31 dies, 33 personatges i molts punts en joc!
+      </p>
+
+      <p>
+        A continuació t'expliquem breument com funcionarà el joc:
+      </p>
+
+      <p>
+        Cada dia, a les <strong>8:00 h del matí</strong>, s'obrirà
+        una nova casella del calendari d'Advent i descobriràs
+        el personatge amagat del dia.
+      </p>
+
+      <p>
+        La teva missió serà endevinar qui s'amaga darrere de cada
+        personatge! Tindràs temps fins a les
+        <strong>00:00 h del mateix dia</strong> per encertar
+        la resposta. Com més aviat l'encertis, més punts aconseguiràs!
+      </p>
+
+      <h3>🏆 Com es reparteixen els punts?</h3>
+
+      <ul class="points-list">
+        <li>🥇 Primer intent correcte: <strong>100 punts</strong></li>
+        <li>🥈 Segon intent correcte: <strong>90 punts</strong></li>
+        <li>🥉 Tercer intent correcte: <strong>75 punts</strong></li>
+        <li>🎯 Quart intent o posteriors: <strong>60 punts</strong></li>
+      </ul>
+
+      <p>
+        <strong>Els intents són il·limitats</strong>, però recorda que només es
+        comptabilitzarà la primera resposta correcta de cada dia!
+      </p>
+
+      <h3>📱 Què trobaràs a la web?</h3>
+
+      <div class="rules-section">
+        <h4>📅 Calendari d'Advent</h4>
+        <p>
+          Aquí podràs descobrir el personatge amagat de cada dia
+          i enviar les teves respostes.
+        </p>
+      </div>
+
+      <div class="rules-section">
+        <h4>🏆 Rànquing en directe</h4>
+        <p>
+          Podràs consultar la teva puntuació, comparar-la amb
+          la de la resta de participants i <strong>comprovar si les
+          respostes que has enviat són correctes.</strong>
+        </p>
+      </div>
+
+      <div class="rules-section">
+        <h4>🎁 Premis especials</h4>
+        <p>
+          Aquí podràs descobrir els premis especials i consultar
+          qui són els guanyadors!
+        </p>
+      </div>
+
+      <button onclick="closeRules()">
+        Som-hi, a jugar! 🎄
+      </button>
+
+    </div>
+  </div>
 
   <!-- Canvas per a l'efecte de neu -->
   <canvas id="snow-canvas"></canvas>
@@ -179,7 +355,7 @@
                   <p class="font-bold text-emerald-400 mb-2 text-sm">Com funciona la puntuació?</p>
                   
                   <div class="space-y-2 text-gray-300">
-                    <p>⏰ <strong>Horari:</strong> Vàlid només entre les <strong>08:00h i les 24:00h</strong> del mateix dia.</p>
+                    <p>⏰ <strong>Horari:</strong> Vàlid només entre les <strong>08:00h i les 00:00h</strong> del mateix dia.</p>
                     
                     <div>
                       <p class="font-semibold text-white mb-0.5">🎯 Punts base per intents:</p>
@@ -504,6 +680,24 @@
     let isSnowing = true;
     let countdownInterval = null;
     month_advent = 10;
+
+
+
+    // Check if the user has already seen the rules
+    document.addEventListener("DOMContentLoaded", function() {
+      const hasSeenRules = localStorage.getItem("adventRulesSeen");
+
+      if (hasSeenRules) {
+        document.getElementById("rulesOverlay").style.display = "none";
+      }
+    });
+
+    // Close the rules and remember the visit
+    function closeRules() {
+      localStorage.setItem("adventRulesSeen", "true");
+      document.getElementById("rulesOverlay").style.display = "none";
+    }
+
 
     // Funció per normalitzar text (treure accents, majúscules i espais sobrants)
     function normalizeName(str) {
