@@ -411,15 +411,26 @@
     
     <!-- SECCIÓ 3 -->
     <section id="section-awards" class="space-y-6 hidden">
+      <button onclick="fetchGoogleSheetsData()" class="px-4 py-2 bg-festive-green hover:bg-festive-lightgreen text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
+          <i class="fa-solid fa-rotate"></i> Actualitzar Dades
+      </button>
+
       <div class="glass-card rounded-3xl p-6 festive-shadow bg-gradient-to-b from-white/90 to-amber-50/40">
           <h2 class="text-center font-holiday text-3xl font-bold text-festive-darkred mb-6">
-          🏆 Premis Especials de l'Advent 🏆
+          🏆 Premis Directes 🏆
           </h2>
-          <button onclick="fetchGoogleSheetsData()" class="px-4 py-2 bg-festive-green hover:bg-festive-lightgreen text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
-            <i class="fa-solid fa-rotate"></i> Actualitzar Dades
-          </button>
-        
+          <p class="text-xs text-gray-500">El/la participant més ràpid/a a encertar els dies 10, 20 o 30 s'endurà un premi directe.</p>
           <!-- Contenidor on s'injectaran les targetes automàticament des de JavaScript -->
+           <div id="direct-awards-container" class="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2 pb-2">
+          <!-- Renderitzat per JS -->
+          </div>
+
+      </div>
+
+      <div class="glass-card rounded-3xl p-6 festive-shadow bg-gradient-to-b from-white/90 to-amber-50/40">
+          <h2 class="text-center font-holiday text-3xl font-bold text-festive-darkred mb-6">
+          🏆 Mencions Especials 🏆
+          </h2>
           <div id="special-awards-container" class="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2 pb-2">
           <!-- Renderitzat per JS -->
           </div>
@@ -460,9 +471,7 @@
     
     // Canvia 'entry.123456789' pel teu codi real de Google Forms:
     const ENTRY_DAY_ID = "entry.236020932";
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8Ayxpthb9dORG6sszYPZVEyUVox7NELAuSYfiNB9wFcozdrUiwg0AV4Y-L_gZpAK5/exec"
-
-    let submittedGuesses = [];
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzr-fxbCUydGRLquAmLFh5U_OktYFizbmu2OwbswP5grvwbQbPZkKMEJeHw4r51uGOG/exec"
 
     // Configuració de les 24 Finestres de l'Advent
     const adventDays = [
@@ -751,18 +760,19 @@
         const rows = await response.json();
 
         submittedGuesses = [];
+        const getValue = value => value == null ? "" : String(value).trim();
         // Saltem la primera fila (i = 1) perquè són les capçaleres de l'Excel
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
-          if (row.length >= 4) {
+          if (row.length >= 7) {
             const timestamp = row[0];
-            const user = String(row[1]).trim();
+            const user = getValue(row[1]);
             const day = parseInt(row[2]);
-            const guess = String(row[3]).trim();
-            const guess_double_1 = String(row[5]).trim();
-            const guess_double_2 = String(row[6]).trim();
+            const guess = getValue(row[3]);
+            const guess_double_1 = getValue(row[5]);
+            const guess_double_2 = getValue(row[6]);
 
-            if (user && !isNaN(day) && guess) {
+            if (user && !isNaN(day)) {
               submittedGuesses.push({ timestamp, day, user, guess, guess_double_1, guess_double_2 });
             }
           }
@@ -770,6 +780,7 @@
 
         renderLeaderboard();
         renderSpecialAwards();
+        renderDirectAwards();
       } catch (err) {
         console.error("Error carregant les dades de l'Apps Script:", err);
       }
@@ -808,6 +819,7 @@
       if (tabName === 'ranking' || tabName === 'awards') {
         fetchGoogleSheetsData();
         renderSpecialAwards(); 
+        renderDirectAwards();
       }
     }
     
@@ -1036,11 +1048,11 @@
     }
 
     function checkSolution(dayObj, guess) {
-        if (dayObj.day === 10 || dayObj.day === 20) {
-            return normalizeName(guess.guess_double_1) === normalizeName(dayObj.solution_1) && 
-                   normalizeName(guess.guess_double_2) === normalizeName(dayObj.solution_2);
+        if (guess.guess_double_1 && guess.guess_double_2) {
+            return normalizeName(dayObj.solution_1) === normalizeName(guess.guess_double_1) &&
+                   normalizeName(dayObj.solution_2) === normalizeName(guess.guess_double_2);
         } else {
-            return normalizeName(guess.guess) === normalizeName(dayObj.solution)
+            return normalizeName(dayObj.solution) === normalizeName(guess.guess);
         }
     }
 
@@ -1310,6 +1322,168 @@
       leaderboardContainer.innerHTML = htmlTabla;
     }
 
+
+
+    function getDayWinner(dayNum) {
+
+      const dayNumber = Number(dayNum);
+
+      // Seleccionem totes les respostes del dia corresponent
+      const dayGuesses = submittedGuesses.filter(g =>
+        Number(g.day) === dayNumber
+      );
+
+      if (dayGuesses.length === 0) return null;
+
+      // Filtrar les respostes correctes i dins del termini
+      const correctGuesses = dayGuesses.filter(g => {
+
+        // Comprovar resposta dins del termini
+        if (g.timestamp) {
+          const respDate = new Date(g.timestamp);
+          const respDay = respDate.getDate(); 
+
+          if (respDay !== g.day) {
+            return; 
+          }
+        } else {
+          return; 
+        }
+
+        // Comprovar si la resposta és correcta
+        const dayObj = adventDays.find(d =>
+          Number(d.day) === dayNumber
+        );
+
+        if (!dayObj) return false;
+
+        return checkSolution(dayObj, g);
+      });
+
+      // Ordenar cronològicament
+      correctGuesses.sort((a, b) =>
+        new Date(a.timestamp) - new Date(b.timestamp)
+      );
+
+      console.log("Respostes correctes del dia", dayNumber, correctGuesses);
+
+      // Retornar el primer guanyador
+      return correctGuesses.length > 0
+        ? normalizeName(correctGuesses[0].user)
+        : null;
+    }
+
+    function renderDirectAwards() {
+      const container = document.getElementById('direct-awards-container');
+
+      if (!container) {
+          console.error("No s'ha trobat direct-awards-container");
+          return;
+      }
+
+      const day10Winners = getDayWinner(10);
+      const winner10Avatar = day10Winners ? getPlayerAvatar(day10Winners) : null;
+      const day20Winners = getDayWinner(20);
+      const winner20Avatar = day20Winners ? getPlayerAvatar(day20Winners) : null;
+      const day30Winners = getDayWinner(30);
+      const winner30Avatar = day30Winners ? getPlayerAvatar(day30Winners) : null;
+
+      container.innerHTML = `
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center gap-2 text-amber-600 mb-3">
+              <span class="text-2xl">👑</span>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">
+                Guanyador dia 10
+              </h4>
+            </div>
+            <h3 class="font-bold text-lg text-gray-800 text-center mb-5"> 🏆 Premi directe 1 </h3>
+            ${day10Winners ? `
+                  <div class="flex flex-col items-center justify-end">
+                    <span class="text-3xl mb-1">👑</span>
+                    <div class="relative flex flex-col items-center justify-center
+                                w-36 h-36 rounded-t-2xl
+                                bg-gradient-to-b from-amber-100 to-amber-50
+                                border-2 border-amber-300 shadow-md">
+                      <img src="${winner10Avatar}" alt="${day10Winners}"
+                        class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" />
+                    </div>
+
+                    <div class="mt-6 text-center">
+                      <p class="text-lg font-black text-gray-900"> ${day10Winners} </p>
+                      <p class="text-xs text-amber-600 font-bold mt-1">
+                        Guanyador/a del dia 10
+                      </p>
+                    </div>
+                  </div> ` : `
+                  <p class="text-gray-500 text-sm text-center py-8"> Encara no hi ha guanyador </p>
+                `
+              }
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center gap-2 text-amber-600 mb-3">
+              <span class="text-2xl">👑</span>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">
+                Guanyador dia 20
+              </h4>
+            </div>
+            <h3 class="font-bold text-lg text-gray-800 text-center mb-5"> 🏆 Premi directe 2 </h3>
+            ${day20Winners ? `
+                  <div class="flex flex-col items-center justify-end">
+                    <span class="text-3xl mb-1">👑</span>
+                    <div class="relative flex flex-col items-center justify-center
+                                w-36 h-36 rounded-t-2xl
+                                bg-gradient-to-b from-amber-100 to-amber-50
+                                border-2 border-amber-300 shadow-md">
+                      <img src="${winner20Avatar}" alt="${day20Winners}"
+                        class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" />
+                    </div>
+
+                    <div class="mt-6 text-center">
+                      <p class="text-lg font-black text-gray-900"> ${day20Winners} </p>
+                      <p class="text-xs text-amber-600 font-bold mt-1">
+                        Guanyador/a del dia 20
+                      </p>
+                    </div>
+                  </div> ` : `
+                  <p class="text-gray-500 text-sm text-center py-8"> Encara no hi ha guanyador </p>
+                `
+              }
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center gap-2 text-amber-600 mb-3">
+              <span class="text-2xl">👑</span>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">
+                Guanyador dia 30
+              </h4>
+            </div>
+            <h3 class="font-bold text-lg text-gray-800 text-center mb-5"> 🏆 Premi directe 3 </h3>
+            ${day30Winners ? `
+                  <div class="flex flex-col items-center justify-end">
+                    <span class="text-3xl mb-1">👑</span>
+                    <div class="relative flex flex-col items-center justify-center
+                                w-36 h-36 rounded-t-2xl
+                                bg-gradient-to-b from-amber-100 to-amber-50
+                                border-2 border-amber-300 shadow-md">
+                      <img src="${winner30Avatar}" alt="${day30Winners}"
+                        class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" />
+                    </div>
+
+                    <div class="mt-6 text-center">
+                      <p class="text-lg font-black text-gray-900"> ${day30Winners} </p>
+                      <p class="text-xs text-amber-600 font-bold mt-1">
+                        Guanyador/a del dia 30
+                      </p>
+                    </div>
+                  </div> ` : `
+                  <p class="text-gray-500 text-sm text-center py-8"> Encara no hi ha guanyador </p>
+                `
+              }
+          </div>
+        `;
+    }
+
     function renderSpecialAwards() {
       const container = document.getElementById('special-awards-container');
       if (!container) return;
@@ -1407,44 +1581,54 @@
         const avatarUrl = getPlayerAvatar(name);
         playersListHtml += `
           <div class="flex items-center gap-2.5">
-            <img src="${avatarUrl}" alt="${name}" class="w-8 h-8 rounded-full bg-emerald-50 border border-amber-300 shadow-xs object-cover flex-shrink-0" />
+            <img src="${avatarUrl}" alt="${name}" class="w-12 h-12 rounded-full bg-emerald-50 border border-amber-300 shadow-xs object-cover flex-shrink-0" />
             <span class="text-base font-black text-gray-900 truncate" title="${name}">${name}</span>
           </div>
         `;
       });
-    
+
       playersListHtml += `</div>`;
 
       // 6. Generem el HTML de les targetes
       let html = `
         <!-- Targeta 1: Màxims Encerts -->
-        <div class="bg-white/80 rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition">
-          <div>
-            <div class="flex items-center gap-2 text-amber-600 mb-3">
-              <span class="text-2xl">👑</span>
-              <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">Màxims Encerts</h4>
-            </div>
-            
-            <!-- Llista de jugadors (un sota de l'altre amb avatar) -->
-            ${playersListHtml}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div class="flex items-center gap-2 text-amber-600 mb-3">
+            <span class="text-2xl">👑</span>
+            <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">
+              Màxims Encerts
+            </h4>
           </div>
-          
-          <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-            <span class="font-medium">Rècord actual</span>
-            <span class="font-extrabold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">${maxCorrect} encerts</span>
-          </div>
+          ${topCorrectPlayers ? `
+                <div class="flex flex-col items-center justify-end">
+                  <span class="text-3xl mb-1">👑</span>
+                  <div class="relative flex flex-col items-center justify-center
+                              w-36 h-36 rounded-t-2xl
+                              bg-gradient-to-b from-amber-100 to-amber-50
+                              border-2 border-amber-300 shadow-md">
+                  ${playersListHtml}
+                  </div>
+
+                  <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                    <span class="font-medium">Rècord actual</span>
+                    <span class="font-extrabold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">${maxCorrect} encerts</span>
+                  </div>
+                </div> ` : `
+                <p class="text-gray-500 text-sm text-center py-8"> Encara no hi ha guanyador </p>
+              `
+            }
         </div>
 
         <!-- Targeta 2: Casella Més Fàcil (amb foto més gran) -->
         <div class="bg-white/80 rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition">
         <div>
             <!-- Títol de la targeta -->
-            <div class="flex items-center gap-2 text-emerald-600 mb-4">
+            <div class="flex items-center gap-2 text-rose-600 mb-4">
             <span class="text-2xl">🌟</span>
             <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">Casella Més Fàcil</h4>
             </div>
             
-            <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center justify-center gap-4">
             <div>
                 <p class="text-2xl font-black text-gray-900">Dia ${easiestDay ? easiestDay.day : '-'}</p>
                 <span class="text-xs text-gray-500 font-medium">${easiestDay ? 'La més fàcil' : 'Calen més dies jugats'}</span>
@@ -1452,27 +1636,27 @@
 
             <!-- Imatge MÉS GRAN  -->
             ${easiestDay && easiestDay.image ? `
-                <img src="${easiestDay.image}" alt="Dia ${easiestDay.day}" class="w-28 h-28 object-cover rounded-2xl shadow-md border-2 border-emerald-100 flex-shrink-0" />
+                <img src="${easiestDay.image}" alt="Dia ${easiestDay.day}" class="w-44 h-44 object-cover rounded-2xl shadow-md border-2 border-rose-100 flex-shrink-0" />
             ` : ''}
             </div>
         </div>
 
         <!-- Peu de targeta -->
-        <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+        <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-center text-xs text-gray-500 text-center">
             <span class="font-medium">Encertada per</span>
-            <span class="font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">${easiestDay ? easiestDay.correctCount : 0} persones</span>
+            <span class="font-extrabold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md">${easiestDay ? easiestDay.correctCount : 0} persones</span>
         </div>
         </div>
 
         <!-- Targeta 3: Casella Més Difícil -->
         <div class="bg-white/80 rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition">
         <div>
-            <div class="flex items-center gap-2 text-rose-600 mb-4">
+            <div class="flex items-center gap-2 text-violet-600 mb-4">
             <span class="text-2xl">🔥</span>
             <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400">Casella Més Difícil</h4>
             </div>
 
-            <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center justify-center gap-4">
             <div>
                 <p class="text-2xl font-black text-gray-900">${hardestDay ? `Dia ${hardestDay.day}` : '-'}</p>
                 <span class="text-xs text-gray-500 font-medium">${hardestDay ? 'La més difícil' : 'Calen més dies jugats'}</span>
@@ -1480,14 +1664,14 @@
 
             <!-- Imatge a la dreta -->
             ${hardestDay && hardestDay.image ? `
-                <img src="${hardestDay.image}" alt="Dia ${hardestDay.day}" class="w-28 h-28 object-cover rounded-2xl shadow-md border-2 border-rose-100 flex-shrink-0" />
+                <img src="${hardestDay.image}" alt="Dia ${hardestDay.day}" class="w-44 h-44 object-cover rounded-2xl shadow-md border-2 border-violet-100 flex-shrink-0" />
             ` : ''}
         </div>
-
+        </div>
         <!-- Peu de targeta -->
-        <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+        <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-center text-xs text-gray-500 text-center">
             <span class="font-medium">Encertada per</span>
-            <span class="font-extrabold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md">${hardestDay ? hardestDay.correctCount : 0} persones</span>
+            <span class="font-extrabold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-md">${hardestDay ? hardestDay.correctCount : 0} persones</span>
         </div>
         </div>
       `;
